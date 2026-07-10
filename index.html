@@ -354,6 +354,7 @@
 
         .container-title-row {
             display: flex;
+            justify-open: space-between;
             justify-content: space-between;
             align-items: center;
             margin-bottom: 8px;
@@ -510,8 +511,26 @@
     </div>
 
     <script>
-        // CONFIGURACIÓN DE LOGIN PRINCIPAL (Cambia esta contraseña por la que desees usar)
+        // CONFIGURACIÓN DE LOGIN PRINCIPAL
         const MASTER_PASSWORD = "1234"; 
+
+        // Diccionario Global de Iconos para los Rubros/Departamentos
+        const MAPA_ICONOS = {
+            "ROPA": "👕 ROPA",
+            "CALZADO": "👟 CALZADO",
+            "CARTERAS": "👜 CARTERAS",
+            "BICICLETAS": "🚲 BICICLETAS",
+            "HOGAR": "🏠 HOGAR",
+            "JUGUETES": "🧸 JUGUETES",
+            "MISC.": "📦 MISC."
+        };
+
+        // Función auxiliar para retornar texto con icono mapeado
+        function obtenerTextoConIcono(rubro) {
+            if (!rubro) return "🏷️ GENERAL";
+            const limpio = String(rubro).toUpperCase().trim();
+            return MAPA_ICONOS[limpio] || `🏷️ ${limpio}`;
+        }
 
         // Registrar Service Worker para soporte offline PWA
         if ('serviceWorker' in navigator) {
@@ -634,17 +653,14 @@
 
         // Inicializar Eventos al cargar DOM
         document.addEventListener('DOMContentLoaded', () => {
-            // Inicializar Autenticación
             initAuth();
 
-            // Ataduras para el Login
             document.getElementById('btn-login').addEventListener('click', handleLogin);
             document.getElementById('password-input').addEventListener('keypress', (e) => {
                 if (e.key === 'Enter') handleLogin();
             });
             document.getElementById('btn-logout').addEventListener('click', handleLogout);
 
-            // Event Listeners del Inventario
             document.getElementById('excel-file').addEventListener('change', handleFileImport);
             document.getElementById('search-contenedor').addEventListener('input', (e) => {
                 appState.filters.contenedor = e.target.value.trim().toLowerCase();
@@ -742,9 +758,9 @@
             let sortedDeps = Array.from(deps).sort();
             
             let tabsContainer = document.getElementById('tabs-container');
-            let tabsHtml = `<div class="tab ${appState.activeTab === 'Todos' ? 'active' : ''}" onclick="switchTab('Todos')">Todos</div>`;
+            let tabsHtml = `<div class="tab ${appState.activeTab === 'Todos' ? 'active' : ''}" onclick="switchTab('Todos')">🌐 Todos</div>`;
             sortedDeps.forEach(dep => {
-                tabsHtml += `<div class="tab ${appState.activeTab === dep ? 'active' : ''}" onclick="switchTab('${dep}')">${dep}</div>`;
+                tabsHtml += `<div class="tab ${appState.activeTab === dep ? 'active' : ''}" onclick="switchTab('${dep}')">${obtenerTextoConIcono(dep)}</div>`;
             });
             tabsContainer.innerHTML = tabsHtml;
 
@@ -758,7 +774,8 @@
             appState.filters.proveedor = "";
             
             document.querySelectorAll('.tab').forEach(t => {
-                if (t.textContent.trim() === depName) t.classList.add('active');
+                let text = t.innerText.replace(/[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDD00-\uDFFF]/g, "").trim();
+                if (text === depName || (depName === "Todos" && text.includes("Todos"))) t.classList.add('active');
                 else t.classList.remove('active');
             });
 
@@ -785,14 +802,14 @@
 
             let tipoHtml = '<option value="">Todos los tipos</option>';
             Array.from(tipos).sort().forEach(t => {
-                tipoHtml += `<option value="${t}" ${prevTipo === t ? 'selected' : ''}>${t}</option>`;
+                tipoHtml += `<option value="${t}" ${prevTipo === t ? 'selected' : ''}>${t}</option>';
             });
             selectTipo.innerHTML = tipoHtml;
             appState.filters.tipo = tipos.has(prevTipo) ? prevTipo : "";
 
             let provHtml = '<option value="">Todos los proveedores</option>';
             Array.from(proveedores).sort().forEach(p => {
-                provHtml += `<option value="${p}" ${prevProv === p ? 'selected' : ''}>${p}</option>`;
+                provHtml += `<option value="${p}" ${prevProv === p ? 'selected' : ''}>${p}</option>';
             });
             selectProv.innerHTML = provHtml;
             appState.filters.proveedor = proveedores.has(prevProv) ? prevProv : "";
@@ -840,7 +857,7 @@
 
             let html = "";
             containersList.forEach((c, idx) => {
-                let badgeDepsHtml = Array.from(c.deps).map(d => `<span class="badge badge-dep">${d}</span>`).join(' ');
+                let badgeDepsHtml = Array.from(c.deps).map(d => `<span class="badge badge-dep">${obtenerTextoConIcono(d)}</span>`).join(' ');
                 let badgeTiposHtml = Array.from(c.tipos).map(t => `<span class="badge badge-tipo">${t}</span>`).join(' ');
                 let badgeProvsHtml = Array.from(c.proveedores).map(p => `<span class="badge badge-prov">${p}</span>`).join(' ');
 
@@ -912,26 +929,28 @@
                 return;
             }
 
-            let exportData = filteredRows.map(r => ({
-                "Contenedor": r.contenedor,
-                "No. Paca": r.paca,
-                "Departamento": r.nom_dep,
-                "Tipo": r.tipo,
-                "Proveedor": r.proveedor,
-                "Descripción": r.descrip,
-                "Peso (Lbs)": r.peso,
-                "Valor Libra": r.valorlibra,
-                "Total": r.total,
-                "Fecha": r.fecha,
-                "PLU": r.plu
+            // Mapear los datos limpios en español y estructurados para el Excel saliente
+            let exportData = filteredRows.map(p => ({
+                "Contenedor": p.contenedor || '',
+                "N° Paca": p.paca || '',
+                "Rubro / Departamento": p.nom_dep || '',
+                "Tipo": p.tipo || '',
+                "Proveedor": p.proveedor || '',
+                "Descripción": p.descrip || '',
+                "Peso (Lbs)": p.peso || '',
+                "Fecha": p.fecha || ''
             }));
 
             const worksheet = XLSX.utils.json_to_sheet(exportData);
             const workbook = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(workbook, worksheet, "Inventario Filtrado");
+            
+            // Nombre de la hoja recortado por límites de Excel (31 chars)
+            let nombreHoja = appState.activeTab.substring(0, 31);
+            XLSX.utils.book_append_sheet(workbook, worksheet, nombreHoja);
 
-            let filename = `Inventario_Vista_${appState.activeTab.replace(/[^a-z0-9]/gi, '_')}.xlsx`;
-            XLSX.writeFile(workbook, filename);
+            // Nombre de archivo dinámico e inteligente según filtros activos
+            let nombreArchivo = `Inventario_${appState.activeTab.replace(/ /g, "_")}.xlsx`;
+            XLSX.writeFile(workbook, nombreArchivo);
         }
     </script>
 </body>
