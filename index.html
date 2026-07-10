@@ -354,7 +354,6 @@
 
         .container-title-row {
             display: flex;
-            justify-open: space-between;
             justify-content: space-between;
             align-items: center;
             margin-bottom: 8px;
@@ -512,7 +511,7 @@
 
     <script>
         // CONFIGURACIÓN DE LOGIN PRINCIPAL
-        const MASTER_PASSWORD = "1234"; 
+        const MASTER_PASSWORD = "Surtido"; 
 
         // Diccionario Global de Iconos para los Rubros/Departamentos
         const MAPA_ICONOS = {
@@ -802,14 +801,14 @@
 
             let tipoHtml = '<option value="">Todos los tipos</option>';
             Array.from(tipos).sort().forEach(t => {
-                tipoHtml += `<option value="${t}" ${prevTipo === t ? 'selected' : ''}>${t}</option>';
+                tipoHtml += `<option value="${t}" ${prevTipo === t ? 'selected' : ''}>${t}</option>`;
             });
             selectTipo.innerHTML = tipoHtml;
             appState.filters.tipo = tipos.has(prevTipo) ? prevTipo : "";
 
             let provHtml = '<option value="">Todos los proveedores</option>';
             Array.from(proveedores).sort().forEach(p => {
-                provHtml += `<option value="${p}" ${prevProv === p ? 'selected' : ''}>${p}</option>';
+                provHtml += `<option value="${p}" ${prevProv === p ? 'selected' : ''}>${p}</option>`;
             });
             selectProv.innerHTML = provHtml;
             appState.filters.proveedor = proveedores.has(prevProv) ? prevProv : "";
@@ -929,7 +928,6 @@
                 return;
             }
 
-            // Mapear los datos limpios en español y estructurados para el Excel saliente
             let exportData = filteredRows.map(p => ({
                 "Contenedor": p.contenedor || '',
                 "N° Paca": p.paca || '',
@@ -944,12 +942,10 @@
             const worksheet = XLSX.utils.json_to_sheet(exportData);
             const workbook = XLSX.utils.book_new();
             
-            // Nombre de la hoja recortado por límites de Excel (31 chars)
             let nombreHoja = appState.activeTab.substring(0, 31);
             XLSX.utils.book_append_sheet(workbook, worksheet, nombreHoja);
 
-            // Nombre de archivo dinámico e inteligente según filtros activos
-            let nombreArchivo = `Inventario_${appState.activeTab.replace(/ /g, "_")}.xlsx`;
+            let nombreArchivo = `Reporte_${appState.activeTab.replace(/ /g, "_")}.xlsx`;
             XLSX.writeFile(workbook, nombreArchivo);
         }
     </script>
