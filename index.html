@@ -1,0 +1,779 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Control de Inventario de Contenedores</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#1e293b">
+    <link rel="apple-touch-icon" href="icon-192.png">
+    <!-- SheetJS CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --bg: #f8fafc;
+            --surface: #ffffff;
+            --text: #1e293b;
+            --text-light: #64748b;
+            --border: #e2e8f0;
+            --accent: #0f172a;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            line-height: 1.5;
+            padding-bottom: 40px;
+        }
+
+        header {
+            background-color: var(--accent);
+            color: white;
+            padding: 16px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        header h1 {
+            font-size: 1.2rem;
+            font-weight: 700;
+        }
+
+        .btn {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: background 0.2s;
+        }
+
+        .btn:hover {
+            background-color: var(--primary-dark);
+        }
+
+        .btn-secondary {
+            background-color: #475569;
+        }
+        .btn-secondary:hover {
+            background-color: #334155;
+        }
+
+        .file-input-wrapper {
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+        }
+
+        .file-input-wrapper input[type=file] {
+            font-size: 100px;
+            position: absolute;
+            left: 0;
+            top: 0;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        /* Stats Cards */
+        .stats-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            padding: 16px;
+        }
+
+        .stat-card {
+            background: var(--surface);
+            padding: 16px;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            border: 1px solid var(--border);
+            text-align: center;
+        }
+
+        .stat-card .value {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .stat-card .label {
+            font-size: 0.85rem;
+            color: var(--text-light);
+            margin-top: 4px;
+        }
+
+        /* Tabs Scrollable Container */
+        .tabs-wrapper {
+            overflow-x: auto;
+            white-space: nowrap;
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+            padding: 0 8px;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .tabs-wrapper::-webkit-scrollbar {
+            display: none;
+        }
+
+        .tab {
+            display: inline-block;
+            padding: 12px 16px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--text-light);
+            border-bottom: 3px solid transparent;
+            cursor: pointer;
+        }
+
+        .tab.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+        }
+
+        /* Filters Section */
+        .filters-container {
+            background: var(--surface);
+            padding: 16px;
+            border-bottom: 1px solid var(--border);
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 12px;
+        }
+
+        @media (min-width: 768px) {
+            .filters-container {
+                grid-template-columns: 1fr 1fr 1fr;
+            }
+            .stats-container {
+                grid-template-columns: 1fr 1fr 1fr 1fr;
+            }
+        }
+
+        .search-wrapper, .select-wrapper {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .search-wrapper label, .select-wrapper label {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--text-light);
+        }
+
+        input[type="text"], select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 0.95rem;
+            background-color: var(--bg);
+            color: var(--text);
+            outline: none;
+        }
+
+        input[type="text"]:focus, select:focus {
+            border-color: var(--primary);
+        }
+
+        .action-bar {
+            padding: 0 16px 16px 16px;
+            display: flex;
+            justify-content: flex-end;
+            background: var(--surface);
+        }
+
+        /* Container Cards */
+        .containers-list {
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .container-card {
+            background: var(--surface);
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            overflow: hidden;
+        }
+
+        .container-header {
+            padding: 16px;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .container-title-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .container-id {
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: var(--accent);
+        }
+
+        .paca-count {
+            background: #eff6ff;
+            color: var(--primary);
+            padding: 4px 8px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .badges-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        .badge {
+            font-size: 0.75rem;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-weight: 500;
+        }
+
+        .badge-dep { background: #f1f5f9; color: #475569; }
+        .badge-tipo { background: #f0fdf4; color: #166534; }
+        .badge-prov { background: #fff7ed; color: #9a3412; }
+
+        .container-detail {
+            display: none;
+            border-top: 1px solid var(--border);
+            background: #fafafa;
+            overflow-x: auto;
+        }
+
+        .container-card.expanded .container-detail {
+            display: block;
+        }
+
+        /* Responsive Table Inside Detail */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+            text-align: left;
+            min-width: 600px;
+        }
+
+        th, td {
+            padding: 10px 12px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        th {
+            background: #f1f5f9;
+            color: var(--text-light);
+            font-weight: 600;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 16px;
+            color: var(--text-light);
+        }
+
+        .empty-state p {
+            margin-bottom: 12px;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>📦 Inventario</h1>
+        <div class="file-input-wrapper">
+            <button class="btn">Importar Excel</button>
+            <input type="file" id="excel-file" accept=".xlsx, .xls" />
+        </div>
+    </header>
+
+    <div class="stats-container">
+        <div class="stat-card">
+            <div class="value" id="stat-containers">0</div>
+            <div class="label">Contenedores</div>
+        </div>
+        <div class="stat-card">
+            <div class="value" id="stat-pacas">0</div>
+            <div class="label">Pacas en Vista</div>
+        </div>
+    </div>
+
+    <div class="tabs-wrapper" id="tabs-container">
+        <!-- Generado dinámicamente -->
+    </div>
+
+    <div class="filters-container">
+        <div class="search-wrapper">
+            <label for="search-contenedor">Buscar Contenedor</label>
+            <input type="text" id="search-contenedor" placeholder="Ej: CONT-12345...">
+        </div>
+        <div class="select-wrapper">
+            <label for="filter-tipo">Tipo</label>
+            <select id="filter-tipo">
+                <option value="">Todos los tipos</option>
+            </select>
+        </div>
+        <div class="select-wrapper">
+            <label for="filter-proveedor">Proveedor</label>
+            <select id="filter-proveedor">
+                <option value="">Todos los proveedores</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="action-bar">
+        <button class="btn btn-secondary" id="btn-export">📥 Exportar Vista</button>
+    </div>
+
+    <main class="containers-list" id="containers-list">
+        <div class="empty-state">
+            <p>No hay datos cargados en el inventario.</p>
+            <p>Por favor, importa un archivo Excel diario para comenzar.</p>
+        </div>
+    </main>
+
+    <script>
+        // Registrar Service Worker para soporte offline PWA
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js')
+                    .then(reg => console.log('Service Worker registrado con éxito:', reg.scope))
+                    .catch(err => console.error('Error al registrar Service Worker:', err));
+            });
+        }
+
+        // Estado de la Aplicación
+        let appState = {
+            rawRows: [],
+            activeTab: "Todos",
+            filters: {
+                contenedor: "",
+                tipo: "",
+                proveedor: ""
+            }
+        };
+
+        // Mapeo flexible de encabezados uniformes
+        const HEADER_MAP = {
+            paca: ['paca', 'paca', 'numero de paca', 'numpaca', 'num_paca'],
+            fecha: ['fecha', 'date'],
+            peso: ['peso', 'weight', 'libras', 'lbs'],
+            valorlibra: ['valorlibra', 'valor_libra', 'v_libra', 'costolb', 'precio_lb'],
+            total: ['total', 'monto', 'valor', 'total_precio'],
+            nom_dep: ['nom_dep', 'departamento', 'dep', 'nomdep', 'categoria', 'category'],
+            proveedor: ['proveedor', 'prov', 'vendor', 'supplier'],
+            tipo: ['tipo', 'type', 'clase'],
+            descrip: ['descrip', 'descripcion', 'description', 'detalle'],
+            contenedor: ['contenedor', 'container', 'cont', 'n_contenedor'],
+            plu: ['plu', 'codigo', 'sku']
+        };
+
+        // Normalizar textos para comparación flexible
+        function cleanString(str) {
+            if (!str) return '';
+            return String(str).toLowerCase()
+                .normalize("NFD")
+                .replace(/[̀-ͯ]/g, "")
+                .trim();
+        }
+
+        // Detectar índices de columnas basado en los mapeos
+        function mapHeaders(headers) {
+            let mapping = {};
+            let foundContenedor = false;
+
+            headers.forEach((h, index) => {
+                let cleaned = cleanString(h);
+                if (!cleaned) return;
+
+                for (let key in HEADER_MAP) {
+                    if (HEADER_MAP[key].includes(cleaned)) {
+                        // Manejo especial para "contenedor": solo tomar la PRIMERA ocurrencia
+                        if (key === 'contenedor') {
+                            if (!foundContenedor) {
+                                mapping[key] = index;
+                                foundContenedor = true;
+                            }
+                        } else {
+                            // Para el resto, si no está mapeado aún, asignarlo
+                            if (mapping[key] === undefined) {
+                                mapping[key] = index;
+                            }
+                        }
+                    }
+                }
+            });
+            return mapping;
+        }
+
+        // Inicializar desde localStorage al cargar
+        document.addEventListener('DOMContentLoaded', () => {
+            const savedData = localStorage.getItem('contenedor_inventario');
+            if (savedData) {
+                try {
+                    appState.rawRows = JSON.parse(savedData);
+                    renderApp();
+                } catch(e) {
+                    console.error("Error cargando localStorage", e);
+                }
+            }
+
+            // Event Listeners
+            document.getElementById('excel-file').addEventListener('change', handleFileImport);
+            document.getElementById('search-contenedor').addEventListener('input', (e) => {
+                appState.filters.contenedor = e.target.value.trim().toLowerCase();
+                renderFilteredList();
+            });
+            document.getElementById('filter-tipo').addEventListener('change', (e) => {
+                appState.filters.tipo = e.target.value;
+                renderFilteredList();
+            });
+            document.getElementById('filter-proveedor').addEventListener('change', (e) => {
+                appState.filters.proveedor = e.target.value;
+                renderFilteredList();
+            });
+            document.getElementById('btn-export').addEventListener('click', exportToExcel);
+        });
+
+        // Procesar archivo Excel cargado
+        function handleFileImport(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(evt) {
+                const data = new Uint8Array(evt.target.result);
+                const workbook = XLSX.read(data, { type: 'array' });
+                
+                // Tomar primera hoja
+                const firstSheetName = workbook.SheetNames[0];
+                const worksheet = workbook.Sheets[firstSheetName];
+                
+                // Obtener matriz de datos crudos incluyendo filas vacías/encabezados
+                const rawJson = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+                
+                if (rawJson.length < 2) {
+                    alert("El archivo no contiene suficientes filas de datos.");
+                    return;
+                }
+
+                // Identificar fila de encabezados (asumimos fila 0)
+                const headers = rawJson[0];
+                const colMapping = mapHeaders(headers);
+
+                if (colMapping.contenedor === undefined) {
+                    alert("No se pudo detectar la columna 'contenedor'. Verifique el archivo.");
+                    return;
+                }
+
+                // Transformar filas crudas a objetos estandarizados
+                let processedRows = [];
+                for (let i = 1; i < rawJson.length; i++) {
+                    let row = rawJson[i];
+                    if (!row || row.length === 0) continue;
+
+                    // Validar si al menos tiene un contenedor para procesar
+                    let contVal = row[colMapping.contenedor];
+                    if (contVal === undefined || contVal === null || String(contVal).trim() === "") continue;
+
+                    let newRow = {};
+                    for (let key in HEADER_MAP) {
+                        let colIdx = colMapping[key];
+                        let val = colIdx !== undefined ? row[colIdx] : "";
+                        
+                        // Formatear/limpiar campos específicos si es necesario
+                        if (key === 'nom_dep') {
+                            val = val ? String(val).toUpperCase().trim() : "MISC.";
+                        } else if (key === 'tipo') {
+                            val = val ? String(val).toUpperCase().trim() : "GENERAL";
+                        } else if (key === 'proveedor') {
+                            val = val ? String(val).toUpperCase().trim() : "VARIOS";
+                        }
+                        newRow[key] = val !== undefined ? val : "";
+                    }
+                    processedRows.push(newRow);
+                }
+
+                // Guardar y renderizar
+                appState.rawRows = processedRows;
+                localStorage.setItem('contenedor_inventario', JSON.stringify(processedRows));
+                
+                // Reiniciar filtros
+                appState.activeTab = "Todos";
+                appState.filters = { contenedor: "", tipo: "", proveedor: "" };
+                document.getElementById('search-contenedor').value = "";
+                
+                renderApp();
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        // Renderizado general de pestañas, selectores y lista de contenedores
+        function renderApp() {
+            if (appState.rawRows.length === 0) {
+                document.getElementById('containers-list').innerHTML = `
+                    <div class="empty-state">
+                        <p>No hay datos cargados en el inventario.</p>
+                        <p>Por favor, importa un archivo Excel diario para comenzar.</p>
+                    </div>`;
+                updateStats(0, 0);
+                return;
+            }
+
+            // 1. Renderizar pestañas basadas en departamentos únicos
+            let deps = new Set();
+            appState.rawRows.forEach(r => { if(r.nom_dep) deps.add(r.nom_dep); });
+            let sortedDeps = Array.from(deps).sort();
+            
+            let tabsContainer = document.getElementById('tabs-container');
+            let tabsHtml = `<div class="tab ${appState.activeTab === 'Todos' ? 'active' : ''}" onclick="switchTab('Todos')">Todos</div>`;
+            sortedDeps.forEach(dep => {
+                tabsHtml += `<div class="tab ${appState.activeTab === dep ? 'active' : ''}" onclick="switchTab('${dep}')">${dep}</div>`;
+            });
+            tabsContainer.innerHTML = tabsHtml;
+
+            // 2. Poblar/actualizar dinámicamente los selectores de filtros según la pestaña activa
+            populateFilterOptions();
+
+            // 3. Renderizar resultados filtrados
+            renderFilteredList();
+        }
+
+        function switchTab(depName) {
+            appState.activeTab = depName;
+            // Reiniciar filtros al cambiar de pestaña para mejorar UX fluida
+            appState.filters.tipo = "";
+            appState.filters.proveedor = "";
+            
+            // Actualizar clases de pestañas activas de inmediato
+            document.querySelectorAll('.tab').forEach(t => {
+                if (t.textContent.trim() === depName) t.classList.add('active');
+                else t.classList.remove('active');
+            });
+
+            populateFilterOptions();
+            renderFilteredList();
+        }
+
+        function populateFilterOptions() {
+            // Filtrar filas aplicables únicamente a la pestaña activa para cascada de opciones correcta
+            let filteredByTab = appState.rawRows.filter(r => appState.activeTab === "Todos" || r.nom_dep === appState.activeTab);
+            
+            let tipos = new Set();
+            let proveedores = new Set();
+            
+            filteredByTab.forEach(r => {
+                if(r.tipo) tipos.add(r.tipo);
+                if(r.proveedor) proveedores.add(r.proveedor);
+            });
+
+            let selectTipo = document.getElementById('filter-tipo');
+            let selectProv = document.getElementById('filter-proveedor');
+
+            // Mantener valor anterior si aún es válido
+            let prevTipo = appState.filters.tipo;
+            let prevProv = appState.filters.proveedor;
+
+            let tipoHtml = '<option value="">Todos los tipos</option>';
+            Array.from(tipos).sort().forEach(t => {
+                tipoHtml += `<option value="${t}" ${prevTipo === t ? 'selected' : ''}>${t}</option>`;
+            });
+            selectTipo.innerHTML = tipoHtml;
+            appState.filters.tipo = tipos.has(prevTipo) ? prevTipo : "";
+
+            let provHtml = '<option value="">Todos los proveedores</option>';
+            Array.from(proveedores).sort().forEach(p => {
+                provHtml += `<option value="${p}" ${prevProv === p ? 'selected' : ''}>${p}</option>`;
+            });
+            selectProv.innerHTML = provHtml;
+            appState.filters.proveedor = proveedores.has(prevProv) ? prevProv : "";
+        }
+
+        // Obtener el subconjunto de filas según todos los filtros aplicados en cascada
+        function getFilteredRows() {
+            return appState.rawRows.filter(r => {
+                // Filtro Pestaña / Departamento
+                if (appState.activeTab !== "Todos" && r.nom_dep !== appState.activeTab) return false;
+                // Filtro Buscador Contenedor
+                if (appState.filters.contenedor && !String(r.contenedor).toLowerCase().includes(appState.filters.contenedor)) return false;
+                // Filtro Tipo
+                if (appState.filters.tipo && r.tipo !== appState.filters.tipo) return false;
+                // Filtro Proveedor
+                if (appState.filters.proveedor && r.proveedor !== appState.filters.proveedor) return false;
+                
+                return true;
+            });
+        }
+
+        function renderFilteredList() {
+            let filteredRows = getFilteredRows();
+            
+            // Agrupar filas por Contenedor
+            let containersMap = {};
+            filteredRows.forEach(row => {
+                let cId = row.contenedor;
+                if (!containersMap[cId]) {
+                    containersMap[cId] = {
+                        id: cId,
+                        pacas: [],
+                        deps: new Set(),
+                        tipos: new Set(),
+                        proveedores: new Set()
+                    };
+                }
+                containersMap[cId].pacas.push(row);
+                if(row.nom_dep) containersMap[cId].deps.add(row.nom_dep);
+                if(row.tipo) containersMap[cId].tipos.add(row.tipo);
+                if(row.proveedor) containersMap[cId].proveedores.add(row.proveedor);
+            });
+
+            let containersList = Object.values(containersMap).sort((a, b) => String(a.id).localeCompare(String(b.id)));
+
+            // Actualizar contadores superiores
+            updateStats(containersList.length, filteredRows.length);
+
+            let mainContainer = document.getElementById('containers-list');
+            if (containersList.length === 0) {
+                mainContainer.innerHTML = '<div class="empty-state"><p>No se encontraron resultados con los filtros actuales.</p></div>';
+                return;
+            }
+
+            let html = "";
+            containersList.forEach((c, idx) => {
+                let badgeDepsHtml = Array.from(c.deps).map(d => `<span class="badge badge-dep">${d}</span>`).join(' ');
+                let badgeTiposHtml = Array.from(c.tipos).map(t => `<span class="badge badge-tipo">${t}</span>`).join(' ');
+                let badgeProvsHtml = Array.from(c.proveedores).map(p => `<span class="badge badge-prov">${p}</span>`).join(' ');
+
+                // Crear filas detalladas de pacas
+                let tableRowsHtml = "";
+                c.pacas.forEach(p => {
+                    tableRowsHtml += `
+                        <tr>
+                            <td><strong>${p.paca || '-'}</strong></td>
+                            <td>${p.tipo || '-'}</td>
+                            <td>${p.proveedor || '-'}</td>
+                            <td>${p.descrip || '-'}</td>
+                            <td>${p.peso ? p.peso + ' lbs' : '-'}</td>
+                            <td>${p.fecha || '-'}</td>
+                        </tr>
+                    `;
+                });
+
+                html += `
+                    <div class="container-card" id="card-${idx}">
+                        <div class="container-header" onclick="toggleCard('card-${idx}')">
+                            <div class="container-title-row">
+                                <span class="container-id">🚛 ${c.id}</span>
+                                <span class="paca-count">${c.pacas.length} ${c.pacas.length === 1 ? 'paca' : 'pacas'}</span>
+                            </div>
+                            <div class="badges-row">
+                                ${badgeDepsHtml}
+                                ${badgeTiposHtml}
+                                ${badgeProvsHtml}
+                            </div>
+                        </div>
+                        <div class="container-detail">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Paca</th>
+                                        <th>Tipo</th>
+                                        <th>Proveedor</th>
+                                        <th>Descripción</th>
+                                        <th>Peso</th>
+                                        <th>Fecha</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${tableRowsHtml}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                `;
+            });
+
+            mainContainer.innerHTML = html;
+        }
+
+        function toggleCard(cardId) {
+            let card = document.getElementById(cardId);
+            if (card) {
+                card.classList.toggle('expanded');
+            }
+        }
+
+        function updateStats(totalContainers, totalPacas) {
+            document.getElementById('stat-containers').textContent = totalContainers;
+            document.getElementById('stat-pacas').textContent = totalPacas;
+        }
+
+        // Exportar a Excel la vista exacta que está filtrada en pantalla
+        function exportToExcel() {
+            let filteredRows = getFilteredRows();
+            if (filteredRows.length === 0) {
+                alert("No hay datos en la vista actual para exportar.");
+                return;
+            }
+
+            // Preparar formato amigable para el Excel resultante
+            let exportData = filteredRows.map(r => ({
+                "Contenedor": r.contenedor,
+                "No. Paca": r.paca,
+                "Departamento": r.nom_dep,
+                "Tipo": r.tipo,
+                "Proveedor": r.proveedor,
+                "Descripción": r.descrip,
+                "Peso (Lbs)": r.peso,
+                "Valor Libra": r.valorlibra,
+                "Total": r.total,
+                "Fecha": r.fecha,
+                "PLU": r.plu
+            }));
+
+            const worksheet = XLSX.utils.json_to_sheet(exportData);
+            const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, worksheet, "Inventario Filtrado");
+
+            // Generar nombre descriptivo basado en pestaña activa
+            let filename = `Inventario_Vista_${appState.activeTab.replace(/[^a-z0-9]/gi, '_')}.xlsx`;
+            XLSX.writeFile(workbook, filename);
+        }
+    </script>
+</body>
+</html>
