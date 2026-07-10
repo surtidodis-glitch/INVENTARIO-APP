@@ -10,6 +10,7 @@
     <!-- SheetJS CDN -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
+        /* Variables base para Modo Claro (Default) */
         :root {
             --primary: #2563eb;
             --primary-dark: #1d4ed8;
@@ -19,6 +20,44 @@
             --text-light: #64748b;
             --border: #e2e8f0;
             --accent: #0f172a;
+            --card-header: #ffffff;
+            --detail-bg: #fafafa;
+            --table-th: #f1f5f9;
+            --badge-dep-bg: #f1f5f9;
+            --badge-dep-text: #475569;
+            --badge-tipo-bg: #f0fdf4;
+            --badge-tipo-text: #166534;
+            --badge-prov-bg: #fff7ed;
+            --badge-prov-text: #9a3412;
+            --paca-count-bg: #eff6ff;
+            --paca-count-text: #2563eb;
+            --login-overlay: rgba(15, 23, 42, 0.6);
+        }
+
+        /* Variables adaptables para Modo Oscuro Dinámico */
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --primary: #3b82f6;
+                --primary-dark: #2563eb;
+                --bg: #0f172a;
+                --surface: #1e293b;
+                --text: #f8fafc;
+                --text-light: #94a3b8;
+                --border: #334155;
+                --accent: #020617;
+                --card-header: #1e293b;
+                --detail-bg: #111827;
+                --table-th: #1f2937;
+                --badge-dep-bg: #334155;
+                --badge-dep-text: #e2e8f0;
+                --badge-tipo-bg: #14532d;
+                --badge-tipo-text: #bbf7d0;
+                --badge-prov-bg: #7c2d12;
+                --badge-prov-text: #fed7aa;
+                --paca-count-bg: #1e3a8a;
+                --paca-count-text: #93c5fd;
+                --login-overlay: rgba(2, 6, 17, 0.9);
+            }
         }
 
         * {
@@ -33,6 +72,73 @@
             color: var(--text);
             line-height: 1.5;
             padding-bottom: 40px;
+        }
+
+        /* Pantalla de Login */
+        #login-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: var(--login-overlay);
+            backdrop-filter: blur(8px);
+            z-index: 2000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .login-card {
+            background: var(--surface);
+            padding: 32px;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+            border: 1px solid var(--border);
+        }
+
+        .login-card h2 {
+            margin-bottom: 8px;
+            font-size: 1.6rem;
+            color: var(--text);
+        }
+
+        .login-card p {
+            color: var(--text-light);
+            font-size: 0.9rem;
+            margin-bottom: 24px;
+        }
+
+        .login-card input[type="password"] {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            margin-bottom: 16px;
+            font-size: 1rem;
+            background: var(--bg);
+            color: var(--text);
+            text-align: center;
+            outline: none;
+        }
+
+        .login-card input[type="password"]:focus {
+            border-color: var(--primary);
+        }
+
+        .login-card .error-msg {
+            color: #ef4444;
+            font-size: 0.85rem;
+            margin-bottom: 12px;
+            display: none;
+        }
+
+        .app-content {
+            display: none; /* Se activa tras el login */
         }
 
         header {
@@ -51,6 +157,12 @@
         header h1 {
             font-size: 1.2rem;
             font-weight: 700;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 8px;
+            align-items: center;
         }
 
         .btn {
@@ -77,6 +189,18 @@
         }
         .btn-secondary:hover {
             background-color: #334155;
+        }
+
+        .btn-logout {
+            background-color: transparent;
+            border: 1px solid #ef4444;
+            color: #ef4444;
+            padding: 6px 12px;
+            font-size: 0.8rem;
+        }
+        .btn-logout:hover {
+            background-color: #ef4444;
+            color: white;
         }
 
         .file-input-wrapper {
@@ -199,7 +323,7 @@
         }
 
         .action-bar {
-            padding: 0 16px 16px 16px;
+            padding: 16px;
             display: flex;
             justify-content: flex-end;
             background: var(--surface);
@@ -223,6 +347,7 @@
 
         .container-header {
             padding: 16px;
+            background: var(--card-header);
             cursor: pointer;
             user-select: none;
         }
@@ -237,12 +362,12 @@
         .container-id {
             font-weight: 700;
             font-size: 1.1rem;
-            color: var(--accent);
+            color: var(--text);
         }
 
         .paca-count {
-            background: #eff6ff;
-            color: var(--primary);
+            background: var(--paca-count-bg);
+            color: var(--paca-count-text);
             padding: 4px 8px;
             border-radius: 20px;
             font-size: 0.8rem;
@@ -262,14 +387,14 @@
             font-weight: 500;
         }
 
-        .badge-dep { background: #f1f5f9; color: #475569; }
-        .badge-tipo { background: #f0fdf4; color: #166534; }
-        .badge-prov { background: #fff7ed; color: #9a3412; }
+        .badge-dep { background: var(--badge-dep-bg); color: var(--badge-dep-text); }
+        .badge-tipo { background: var(--badge-tipo-bg); color: var(--badge-tipo-text); }
+        .badge-prov { background: var(--badge-prov-bg); color: var(--badge-prov-text); }
 
         .container-detail {
             display: none;
             border-top: 1px solid var(--border);
-            background: #fafafa;
+            background: var(--detail-bg);
             overflow-x: auto;
         }
 
@@ -292,7 +417,7 @@
         }
 
         th {
-            background: #f1f5f9;
+            background: var(--table-th);
             color: var(--text-light);
             font-weight: 600;
         }
@@ -314,60 +439,80 @@
 </head>
 <body>
 
-    <header>
-        <h1>📦 Inventario</h1>
-        <div class="file-input-wrapper">
-            <button class="btn">Importar Excel</button>
-            <input type="file" id="excel-file" accept=".xlsx, .xls" />
-        </div>
-    </header>
-
-    <div class="stats-container">
-        <div class="stat-card">
-            <div class="value" id="stat-containers">0</div>
-            <div class="label">Contenedores</div>
-        </div>
-        <div class="stat-card">
-            <div class="value" id="stat-pacas">0</div>
-            <div class="label">Pacas en Vista</div>
+    <!-- Capa de Autenticación / Login -->
+    <div id="login-screen">
+        <div class="login-card">
+            <h2>🔐 Control de Acceso</h2>
+            <p>Introduce la clave para ingresar al inventario</p>
+            <input type="password" id="password-input" placeholder="Contraseña de acceso" autofocus>
+            <div class="error-msg" id="login-error">Contraseña incorrecta. Inténtalo de nuevo.</div>
+            <button class="btn" style="width:100%; justify-content:center;" id="btn-login">Ingresar</button>
         </div>
     </div>
 
-    <div class="tabs-wrapper" id="tabs-container">
-        <!-- Generado dinámicamente -->
-    </div>
+    <!-- Contenido Principal de la App -->
+    <div class="app-content" id="app-content">
+        <header>
+            <h1>📦 Inventario</h1>
+            <div class="header-actions">
+                <div class="file-input-wrapper">
+                    <button class="btn">Importar Excel</button>
+                    <input type="file" id="excel-file" accept=".xlsx, .xls" />
+                </div>
+                <button class="btn btn-logout" id="btn-logout">Salir</button>
+            </div>
+        </header>
 
-    <div class="filters-container">
-        <div class="search-wrapper">
-            <label for="search-contenedor">Buscar Contenedor</label>
-            <input type="text" id="search-contenedor" placeholder="Ej: CONT-12345...">
+        <div class="stats-container">
+            <div class="stat-card">
+                <div class="value" id="stat-containers">0</div>
+                <div class="label">Contenedores</div>
+            </div>
+            <div class="stat-card">
+                <div class="value" id="stat-pacas">0</div>
+                <div class="label">Pacas en Vista</div>
+            </div>
         </div>
-        <div class="select-wrapper">
-            <label for="filter-tipo">Tipo</label>
-            <select id="filter-tipo">
-                <option value="">Todos los tipos</option>
-            </select>
-        </div>
-        <div class="select-wrapper">
-            <label for="filter-proveedor">Proveedor</label>
-            <select id="filter-proveedor">
-                <option value="">Todos los proveedores</option>
-            </select>
-        </div>
-    </div>
 
-    <div class="action-bar">
-        <button class="btn btn-secondary" id="btn-export">📥 Exportar Vista</button>
-    </div>
-
-    <main class="containers-list" id="containers-list">
-        <div class="empty-state">
-            <p>No hay datos cargados en el inventario.</p>
-            <p>Por favor, importa un archivo Excel diario para comenzar.</p>
+        <div class="tabs-wrapper" id="tabs-container">
+            <!-- Generado dinámicamente -->
         </div>
-    </main>
+
+        <div class="filters-container">
+            <div class="search-wrapper">
+                <label for="search-contenedor">Buscar Contenedor</label>
+                <input type="text" id="search-contenedor" placeholder="Ej: CONT-12345...">
+            </div>
+            <div class="select-wrapper">
+                <label for="filter-tipo">Tipo</label>
+                <select id="filter-tipo">
+                    <option value="">Todos los tipos</option>
+                </select>
+            </div>
+            <div class="select-wrapper">
+                <label for="filter-proveedor">Proveedor</label>
+                <select id="filter-proveedor">
+                    <option value="">Todos los proveedores</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="action-bar">
+            <button class="btn btn-secondary" id="btn-export">📥 Exportar Vista</button>
+        </div>
+
+        <main class="containers-list" id="containers-list">
+            <div class="empty-state">
+                <p>No hay datos cargados en el inventario.</p>
+                <p>Por favor, importa un archivo Excel diario para comenzar.</p>
+            </div>
+        </main>
+    </div>
 
     <script>
+        // CONFIGURACIÓN DE LOGIN PRINCIPAL (Cambia esta contraseña por la que desees usar)
+        const MASTER_PASSWORD = "1234"; 
+
         // Registrar Service Worker para soporte offline PWA
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
@@ -423,14 +568,12 @@
 
                 for (let key in HEADER_MAP) {
                     if (HEADER_MAP[key].includes(cleaned)) {
-                        // Manejo especial para "contenedor": solo tomar la PRIMERA ocurrencia
                         if (key === 'contenedor') {
                             if (!foundContenedor) {
                                 mapping[key] = index;
                                 foundContenedor = true;
                             }
                         } else {
-                            // Para el resto, si no está mapeado aún, asignarlo
                             if (mapping[key] === undefined) {
                                 mapping[key] = index;
                             }
@@ -441,8 +584,43 @@
             return mapping;
         }
 
-        // Inicializar desde localStorage al cargar
-        document.addEventListener('DOMContentLoaded', () => {
+        // Control y Manejo del Login Frontend
+        function initAuth() {
+            const sessionActive = sessionStorage.getItem('inv_session_active');
+            const loginScreen = document.getElementById('login-screen');
+            const appContent = document.getElementById('app-content');
+
+            if (sessionActive === 'true') {
+                loginScreen.style.display = 'none';
+                appContent.style.display = 'block';
+                loadInventory();
+            } else {
+                loginScreen.style.display = 'flex';
+                appContent.style.display = 'none';
+            }
+        }
+
+        function handleLogin() {
+            const inputVal = document.getElementById('password-input').value;
+            const errorMsg = document.getElementById('login-error');
+
+            if (inputVal === MASTER_PASSWORD) {
+                sessionStorage.setItem('inv_session_active', 'true');
+                errorMsg.style.display = 'none';
+                document.getElementById('password-input').value = "";
+                initAuth();
+            } else {
+                errorMsg.style.display = 'block';
+            }
+        }
+
+        function handleLogout() {
+            sessionStorage.removeItem('inv_session_active');
+            initAuth();
+        }
+
+        // Cargar inventario desde LocalStorage
+        function loadInventory() {
             const savedData = localStorage.getItem('contenedor_inventario');
             if (savedData) {
                 try {
@@ -452,8 +630,21 @@
                     console.error("Error cargando localStorage", e);
                 }
             }
+        }
 
-            // Event Listeners
+        // Inicializar Eventos al cargar DOM
+        document.addEventListener('DOMContentLoaded', () => {
+            // Inicializar Autenticación
+            initAuth();
+
+            // Ataduras para el Login
+            document.getElementById('btn-login').addEventListener('click', handleLogin);
+            document.getElementById('password-input').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') handleLogin();
+            });
+            document.getElementById('btn-logout').addEventListener('click', handleLogout);
+
+            // Event Listeners del Inventario
             document.getElementById('excel-file').addEventListener('change', handleFileImport);
             document.getElementById('search-contenedor').addEventListener('input', (e) => {
                 appState.filters.contenedor = e.target.value.trim().toLowerCase();
@@ -480,11 +671,8 @@
                 const data = new Uint8Array(evt.target.result);
                 const workbook = XLSX.read(data, { type: 'array' });
                 
-                // Tomar primera hoja
                 const firstSheetName = workbook.SheetNames[0];
                 const worksheet = workbook.Sheets[firstSheetName];
-                
-                // Obtener matriz de datos crudos incluyendo filas vacías/encabezados
                 const rawJson = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
                 
                 if (rawJson.length < 2) {
@@ -492,7 +680,6 @@
                     return;
                 }
 
-                // Identificar fila de encabezados (asumimos fila 0)
                 const headers = rawJson[0];
                 const colMapping = mapHeaders(headers);
 
@@ -501,13 +688,11 @@
                     return;
                 }
 
-                // Transformar filas crudas a objetos estandarizados
                 let processedRows = [];
                 for (let i = 1; i < rawJson.length; i++) {
                     let row = rawJson[i];
                     if (!row || row.length === 0) continue;
 
-                    // Validar si al menos tiene un contenedor para procesar
                     let contVal = row[colMapping.contenedor];
                     if (contVal === undefined || contVal === null || String(contVal).trim() === "") continue;
 
@@ -516,7 +701,6 @@
                         let colIdx = colMapping[key];
                         let val = colIdx !== undefined ? row[colIdx] : "";
                         
-                        // Formatear/limpiar campos específicos si es necesario
                         if (key === 'nom_dep') {
                             val = val ? String(val).toUpperCase().trim() : "MISC.";
                         } else if (key === 'tipo') {
@@ -529,11 +713,9 @@
                     processedRows.push(newRow);
                 }
 
-                // Guardar y renderizar
                 appState.rawRows = processedRows;
                 localStorage.setItem('contenedor_inventario', JSON.stringify(processedRows));
                 
-                // Reiniciar filtros
                 appState.activeTab = "Todos";
                 appState.filters = { contenedor: "", tipo: "", proveedor: "" };
                 document.getElementById('search-contenedor').value = "";
@@ -555,7 +737,6 @@
                 return;
             }
 
-            // 1. Renderizar pestañas basadas en departamentos únicos
             let deps = new Set();
             appState.rawRows.forEach(r => { if(r.nom_dep) deps.add(r.nom_dep); });
             let sortedDeps = Array.from(deps).sort();
@@ -567,20 +748,15 @@
             });
             tabsContainer.innerHTML = tabsHtml;
 
-            // 2. Poblar/actualizar dinámicamente los selectores de filtros según la pestaña activa
             populateFilterOptions();
-
-            // 3. Renderizar resultados filtrados
             renderFilteredList();
         }
 
         function switchTab(depName) {
             appState.activeTab = depName;
-            // Reiniciar filtros al cambiar de pestaña para mejorar UX fluida
             appState.filters.tipo = "";
             appState.filters.proveedor = "";
             
-            // Actualizar clases de pestañas activas de inmediato
             document.querySelectorAll('.tab').forEach(t => {
                 if (t.textContent.trim() === depName) t.classList.add('active');
                 else t.classList.remove('active');
@@ -591,7 +767,6 @@
         }
 
         function populateFilterOptions() {
-            // Filtrar filas aplicables únicamente a la pestaña activa para cascada de opciones correcta
             let filteredByTab = appState.rawRows.filter(r => appState.activeTab === "Todos" || r.nom_dep === appState.activeTab);
             
             let tipos = new Set();
@@ -605,7 +780,6 @@
             let selectTipo = document.getElementById('filter-tipo');
             let selectProv = document.getElementById('filter-proveedor');
 
-            // Mantener valor anterior si aún es válido
             let prevTipo = appState.filters.tipo;
             let prevProv = appState.filters.proveedor;
 
@@ -624,18 +798,12 @@
             appState.filters.proveedor = proveedores.has(prevProv) ? prevProv : "";
         }
 
-        // Obtener el subconjunto de filas según todos los filtros aplicados en cascada
         function getFilteredRows() {
             return appState.rawRows.filter(r => {
-                // Filtro Pestaña / Departamento
                 if (appState.activeTab !== "Todos" && r.nom_dep !== appState.activeTab) return false;
-                // Filtro Buscador Contenedor
                 if (appState.filters.contenedor && !String(r.contenedor).toLowerCase().includes(appState.filters.contenedor)) return false;
-                // Filtro Tipo
                 if (appState.filters.tipo && r.tipo !== appState.filters.tipo) return false;
-                // Filtro Proveedor
                 if (appState.filters.proveedor && r.proveedor !== appState.filters.proveedor) return false;
-                
                 return true;
             });
         }
@@ -643,7 +811,6 @@
         function renderFilteredList() {
             let filteredRows = getFilteredRows();
             
-            // Agrupar filas por Contenedor
             let containersMap = {};
             filteredRows.forEach(row => {
                 let cId = row.contenedor;
@@ -663,8 +830,6 @@
             });
 
             let containersList = Object.values(containersMap).sort((a, b) => String(a.id).localeCompare(String(b.id)));
-
-            // Actualizar contadores superiores
             updateStats(containersList.length, filteredRows.length);
 
             let mainContainer = document.getElementById('containers-list');
@@ -679,7 +844,6 @@
                 let badgeTiposHtml = Array.from(c.tipos).map(t => `<span class="badge badge-tipo">${t}</span>`).join(' ');
                 let badgeProvsHtml = Array.from(c.proveedores).map(p => `<span class="badge badge-prov">${p}</span>`).join(' ');
 
-                // Crear filas detalladas de pacas
                 let tableRowsHtml = "";
                 c.pacas.forEach(p => {
                     tableRowsHtml += `
@@ -733,9 +897,7 @@
 
         function toggleCard(cardId) {
             let card = document.getElementById(cardId);
-            if (card) {
-                card.classList.toggle('expanded');
-            }
+            if (card) card.classList.toggle('expanded');
         }
 
         function updateStats(totalContainers, totalPacas) {
@@ -743,7 +905,6 @@
             document.getElementById('stat-pacas').textContent = totalPacas;
         }
 
-        // Exportar a Excel la vista exacta que está filtrada en pantalla
         function exportToExcel() {
             let filteredRows = getFilteredRows();
             if (filteredRows.length === 0) {
@@ -751,7 +912,6 @@
                 return;
             }
 
-            // Preparar formato amigable para el Excel resultante
             let exportData = filteredRows.map(r => ({
                 "Contenedor": r.contenedor,
                 "No. Paca": r.paca,
@@ -770,7 +930,6 @@
             const workbook = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(workbook, worksheet, "Inventario Filtrado");
 
-            // Generar nombre descriptivo basado en pestaña activa
             let filename = `Inventario_Vista_${appState.activeTab.replace(/[^a-z0-9]/gi, '_')}.xlsx`;
             XLSX.writeFile(workbook, filename);
         }
