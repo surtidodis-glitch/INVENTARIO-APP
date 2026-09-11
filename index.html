@@ -10,10 +10,14 @@
     <meta name="theme-color" content="#071426">
     <link rel="apple-touch-icon" href="icon-192.png">
 
-    <!-- SheetJS CDN -->
+    <!-- SheetJS -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
+    <!-- html2canvas -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
     <style>
+
         /* =========================================================
            SISTEMA VISUAL
            ========================================================= */
@@ -74,6 +78,7 @@
             --radius-lg: 16px;
         }
 
+
         /* =========================================================
            RESET
            ========================================================= */
@@ -82,7 +87,15 @@
             box-sizing: border-box;
             margin: 0;
             padding: 0;
-            font-family: "Courier New", Courier, monospace;
+
+            font-family:
+                "Segoe UI",
+                "Inter",
+                -apple-system,
+                BlinkMacSystemFont,
+                "Helvetica Neue",
+                Arial,
+                sans-serif;
         }
 
         html {
@@ -118,6 +131,7 @@
         button {
             -webkit-tap-highlight-color: transparent;
         }
+
 
         /* =========================================================
            LOGIN
@@ -321,6 +335,7 @@
             }
         }
 
+
         /* =========================================================
            APP
            ========================================================= */
@@ -330,8 +345,9 @@
             min-height: 100vh;
         }
 
+
         /* =========================================================
-           HEADER EMPRESARIAL
+           HEADER
            ========================================================= */
 
         header {
@@ -437,6 +453,7 @@
 
             flex-shrink: 0;
         }
+
 
         /* =========================================================
            BUTTONS
@@ -571,6 +588,7 @@
             height: 100%;
         }
 
+
         /* =========================================================
            DASHBOARD
            ========================================================= */
@@ -614,6 +632,7 @@
 
             margin-top: 4px;
         }
+
 
         /* =========================================================
            STATS
@@ -726,6 +745,7 @@
             letter-spacing: 0.5px;
         }
 
+
         /* =========================================================
            TABS
            ========================================================= */
@@ -837,6 +857,7 @@
             box-shadow:
                 0 4px 14px rgba(47, 140, 255, 0.08);
         }
+
 
         /* =========================================================
            FILTERS
@@ -965,6 +986,7 @@
             color: white;
         }
 
+
         /* =========================================================
            ACTION BAR
            ========================================================= */
@@ -974,12 +996,13 @@
 
             margin: 12px auto 0;
 
-            padding: 0 0;
+            padding: 0;
 
             display: flex;
 
             justify-content: flex-end;
         }
+
 
         /* =========================================================
            CONTAINERS
@@ -1206,6 +1229,87 @@
                 rgba(245, 158, 11, 0.10);
         }
 
+
+        /* =========================================================
+           BOTÓN REPORTE
+           ========================================================= */
+
+        .container-report-tools {
+            padding: 12px 14px;
+
+            display: flex;
+
+            justify-content: flex-end;
+
+            align-items: center;
+
+            gap: 8px;
+
+            background:
+                rgba(7, 20, 36, 0.96);
+
+            border-top: 1px solid var(--border);
+        }
+
+        .btn-report-image {
+            border: 1px solid rgba(34, 197, 94, 0.25);
+
+            background:
+                linear-gradient(
+                    135deg,
+                    rgba(34, 197, 94, 0.16),
+                    rgba(21, 128, 61, 0.18)
+                );
+
+            color: #86efac;
+
+            padding: 9px 13px;
+
+            border-radius: 8px;
+
+            font-size: 0.64rem;
+
+            font-weight: 700;
+
+            letter-spacing: 0.25px;
+
+            cursor: pointer;
+
+            display: inline-flex;
+
+            align-items: center;
+
+            gap: 7px;
+
+            transition:
+                transform 0.18s ease,
+                background 0.18s ease,
+                border-color 0.18s ease;
+        }
+
+        .btn-report-image:hover {
+            transform: translateY(-1px);
+
+            background:
+                linear-gradient(
+                    135deg,
+                    rgba(34, 197, 94, 0.23),
+                    rgba(21, 128, 61, 0.26)
+                );
+
+            border-color:
+                rgba(34, 197, 94, 0.45);
+        }
+
+        .btn-report-image:disabled {
+            opacity: 0.65;
+
+            cursor: wait;
+
+            transform: none;
+        }
+
+
         /* =========================================================
            DETAIL TABLE
            ========================================================= */
@@ -1305,6 +1409,373 @@
             color: #ffffff;
         }
 
+
+        /* =========================================================
+           REPORTE PARA IMAGEN / WHATSAPP
+           ========================================================= */
+
+        .report-scroll-wrapper {
+            width: 100%;
+
+            overflow-x: auto;
+
+            padding: 14px;
+
+            background:
+                #071426;
+        }
+
+        .container-image-report {
+            width: 900px;
+
+            max-width: 900px;
+
+            margin: 0 auto;
+
+            background:
+                #ffffff;
+
+            color: #172033;
+
+            border-radius: 12px;
+
+            overflow: hidden;
+
+            box-shadow:
+                0 14px 40px rgba(0, 0, 0, 0.28);
+
+            font-family:
+                "Segoe UI",
+                Arial,
+                sans-serif;
+        }
+
+        .report-header {
+            background:
+                linear-gradient(
+                    135deg,
+                    #0a2442,
+                    #0c3560
+                );
+
+            color: #ffffff;
+
+            padding: 28px 32px 24px;
+
+            position: relative;
+
+            overflow: hidden;
+        }
+
+        .report-header::after {
+            content: "";
+
+            position: absolute;
+
+            width: 220px;
+            height: 220px;
+
+            right: -70px;
+            top: -90px;
+
+            border-radius: 50%;
+
+            background:
+                rgba(255,255,255,0.06);
+        }
+
+        .report-brand {
+            display: flex;
+
+            align-items: center;
+
+            gap: 12px;
+
+            margin-bottom: 20px;
+
+            position: relative;
+
+            z-index: 1;
+        }
+
+        .report-brand-icon {
+            width: 44px;
+            height: 44px;
+
+            display: flex;
+
+            align-items: center;
+            justify-content: center;
+
+            border-radius: 11px;
+
+            background:
+                rgba(255,255,255,0.10);
+
+            border:
+                1px solid rgba(255,255,255,0.16);
+
+            font-size: 1.35rem;
+        }
+
+        .report-brand-name {
+            font-size: 12px;
+
+            font-weight: 700;
+
+            letter-spacing: 1.2px;
+
+            text-transform: uppercase;
+        }
+
+        .report-brand-subtitle {
+            font-size: 9px;
+
+            opacity: 0.68;
+
+            margin-top: 2px;
+
+            text-transform: uppercase;
+
+            letter-spacing: 0.8px;
+        }
+
+        .report-title {
+            position: relative;
+
+            z-index: 1;
+
+            font-size: 28px;
+
+            line-height: 1.15;
+
+            font-weight: 700;
+
+            letter-spacing: -0.4px;
+
+            margin-bottom: 8px;
+        }
+
+        .report-container-id {
+            position: relative;
+
+            z-index: 1;
+
+            font-size: 14px;
+
+            font-weight: 600;
+
+            color: #b9dcff;
+
+            letter-spacing: 0.4px;
+        }
+
+        .report-summary-grid {
+            display: grid;
+
+            grid-template-columns:
+                repeat(4, minmax(0, 1fr));
+
+            gap: 10px;
+
+            padding: 18px 20px;
+
+            background:
+                #f4f7fb;
+
+            border-bottom:
+                1px solid #dce4ee;
+        }
+
+        .report-summary-item {
+            background:
+                #ffffff;
+
+            border:
+                1px solid #dce4ee;
+
+            border-radius: 8px;
+
+            padding: 12px 13px;
+
+            min-height: 68px;
+        }
+
+        .report-summary-label {
+            color: #718096;
+
+            font-size: 8px;
+
+            font-weight: 700;
+
+            letter-spacing: 0.7px;
+
+            text-transform: uppercase;
+
+            margin-bottom: 5px;
+        }
+
+        .report-summary-value {
+            color: #172033;
+
+            font-size: 12px;
+
+            font-weight: 700;
+
+            line-height: 1.3;
+
+            word-break: break-word;
+        }
+
+        .report-section-title {
+            padding:
+                20px 20px 10px;
+
+            color: #172033;
+
+            font-size: 13px;
+
+            font-weight: 700;
+
+            letter-spacing: 0.3px;
+        }
+
+        .report-table-wrapper {
+            padding:
+                0 20px 20px;
+        }
+
+        .container-image-report .report-table {
+            width: 100%;
+
+            min-width: 0;
+
+            border-collapse: separate;
+
+            border-spacing: 0;
+
+            table-layout: fixed;
+
+            font-size: 9px;
+
+            overflow: hidden;
+
+            border:
+                1px solid #d9e2ec;
+
+            border-radius: 8px;
+        }
+
+        .container-image-report .report-table th {
+            position: static;
+
+            z-index: auto;
+
+            background:
+                #e9f1f9;
+
+            color: #43546a;
+
+            border-bottom:
+                1px solid #cfd9e5;
+
+            padding:
+                9px 8px;
+
+            font-size: 8px;
+
+            font-weight: 700;
+
+            text-transform: uppercase;
+
+            letter-spacing: 0.35px;
+
+            white-space: normal;
+
+            text-align: left;
+        }
+
+        .container-image-report .report-table td {
+            color: #263548;
+
+            background: #ffffff;
+
+            border-bottom:
+                1px solid #e5ebf1;
+
+            padding:
+                8px;
+
+            white-space: normal;
+
+            vertical-align: top;
+
+            line-height: 1.35;
+
+            overflow-wrap: anywhere;
+        }
+
+        .container-image-report .report-table tr:nth-child(even) td {
+            background:
+                #f8fafc;
+        }
+
+        .container-image-report .report-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .report-col-paca {
+            width: 11%;
+        }
+
+        .report-col-tipo {
+            width: 13%;
+        }
+
+        .report-col-prov {
+            width: 17%;
+        }
+
+        .report-col-desc {
+            width: 34%;
+        }
+
+        .report-col-peso {
+            width: 12%;
+        }
+
+        .report-col-fecha {
+            width: 13%;
+        }
+
+        .report-footer {
+            padding:
+                13px 20px;
+
+            background:
+                #f4f7fb;
+
+            border-top:
+                1px solid #dce4ee;
+
+            display: flex;
+
+            justify-content: space-between;
+
+            align-items: center;
+
+            gap: 20px;
+
+            color: #718096;
+
+            font-size: 8px;
+        }
+
+        .report-footer strong {
+            color: #43546a;
+        }
+
+
         /* =========================================================
            EMPTY STATE
            ========================================================= */
@@ -1373,6 +1844,7 @@
             color: #556a83;
         }
 
+
         /* =========================================================
            SCROLLBAR
            ========================================================= */
@@ -1395,6 +1867,7 @@
         ::-webkit-scrollbar-thumb:hover {
             background: #28527e;
         }
+
 
         /* =========================================================
            DESKTOP
@@ -1441,6 +1914,7 @@
                     minmax(200px, 0.75fr);
             }
         }
+
 
         /* =========================================================
            MOBILE
@@ -1621,6 +2095,20 @@
                 padding:
                     48px 15px;
             }
+
+            .container-report-tools {
+                justify-content: stretch;
+            }
+
+            .btn-report-image {
+                width: 100%;
+
+                justify-content: center;
+            }
+
+            .report-scroll-wrapper {
+                padding: 8px;
+            }
         }
 
         @media (max-width: 430px) {
@@ -1666,6 +2154,7 @@
             }
         }
 
+
         /* =========================================================
            REDUCCIÓN DE MOVIMIENTO
            ========================================================= */
@@ -1681,10 +2170,13 @@
                 scroll-behavior: auto !important;
             }
         }
+
     </style>
 </head>
 
+
 <body>
+
 
     <!-- =========================================================
          LOGIN
@@ -1698,7 +2190,9 @@
                 📦
             </div>
 
-            <h2>CONTROL DE INVENTARIO</h2>
+            <h2>
+                CONTROL DE INVENTARIO
+            </h2>
 
             <p>
                 Acceso al sistema de control<br>
@@ -1746,6 +2240,7 @@
         id="app-content"
     >
 
+
         <!-- HEADER -->
 
         <header>
@@ -1786,6 +2281,7 @@
                     >
 
                 </div>
+
 
                 <button
                     class="btn btn-logout"
@@ -1880,7 +2376,6 @@
                 class="tabs-wrapper"
                 id="tabs-container"
             >
-                <!-- Generado dinámicamente -->
             </div>
 
         </section>
@@ -2023,14 +2518,14 @@
     <script>
 
         // ========================================================
-        // CONFIGURACIÓN DE LOGIN PRINCIPAL
+        // CONFIGURACIÓN
         // ========================================================
 
         const MASTER_PASSWORD = "Surtido";
 
 
         // ========================================================
-        // DICCIONARIO GLOBAL DE ICONOS
+        // ICONOS
         // ========================================================
 
         const MAPA_ICONOS = {
@@ -2051,10 +2546,6 @@
 
         };
 
-
-        // ========================================================
-        // FUNCIÓN AUXILIAR PARA ICONOS
-        // ========================================================
 
         function obtenerTextoConIcono(rubro) {
 
@@ -2107,7 +2598,7 @@
 
 
         // ========================================================
-        // ESTADO DE LA APLICACIÓN
+        // ESTADO
         // ========================================================
 
         let appState = {
@@ -2130,7 +2621,7 @@
 
 
         // ========================================================
-        // MAPEO FLEXIBLE DE ENCABEZADOS
+        // MAPA DE ENCABEZADOS
         // ========================================================
 
         const HEADER_MAP = {
@@ -2216,7 +2707,7 @@
 
 
         // ========================================================
-        // NORMALIZAR TEXTOS
+        // LIMPIAR TEXTO
         // ========================================================
 
         function cleanString(str) {
@@ -2228,8 +2719,102 @@
             return String(str)
                 .toLowerCase()
                 .normalize("NFD")
-                .replace(/[̀-ͯ]/g, "")
+                .replace(/[\u0300-\u036f]/g, "")
                 .trim();
+        }
+
+
+        // ========================================================
+        // ESCAPAR HTML
+        // ========================================================
+
+        function escapeHtml(value) {
+
+            if (
+                value === undefined ||
+                value === null
+            ) {
+
+                return "";
+
+            }
+
+            return String(value)
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+
+
+        // ========================================================
+        // LIMPIAR NOMBRE DE ARCHIVO
+        // ========================================================
+
+        function sanitizeFileName(value) {
+
+            return String(value || "CONTENEDOR")
+                .replace(/[<>:"/\\|?*\x00-\x1F]/g, "_")
+                .replace(/\s+/g, "_")
+                .substring(0, 100);
+        }
+
+
+        // ========================================================
+        // FORMATEAR TEXTO DEL REPORTE
+        // ========================================================
+
+        function reportText(value, fallback = "-") {
+
+            if (
+                value === undefined ||
+                value === null ||
+                String(value).trim() === ""
+            ) {
+
+                return fallback;
+
+            }
+
+            return escapeHtml(value);
+
+        }
+
+
+        // ========================================================
+        // PESO TOTAL
+        // ========================================================
+
+        function calcularPesoTotal(pacas) {
+
+            return pacas.reduce(
+                (total, p) => {
+
+                    let valor =
+                        String(
+                            p.peso ?? ""
+                        )
+                        .replace(/,/g, "")
+                        .replace(/[^\d.-]/g, "");
+
+                    let numero =
+                        parseFloat(valor);
+
+                    if (
+                        Number.isNaN(numero)
+                    ) {
+
+                        return total;
+
+                    }
+
+                    return total + numero;
+
+                },
+                0
+            );
+
         }
 
 
@@ -2245,26 +2830,33 @@
 
             headers.forEach((h, index) => {
 
-                let cleaned = cleanString(h);
+                let cleaned =
+                    cleanString(h);
 
                 if (!cleaned) {
                     return;
                 }
 
-                for (let key in HEADER_MAP) {
+                for (
+                    let key in HEADER_MAP
+                ) {
 
                     if (
                         HEADER_MAP[key]
                             .includes(cleaned)
                     ) {
 
-                        if (key === 'contenedor') {
+                        if (
+                            key === 'contenedor'
+                        ) {
 
                             if (!foundContenedor) {
 
-                                mapping[key] = index;
+                                mapping[key] =
+                                    index;
 
-                                foundContenedor = true;
+                                foundContenedor =
+                                    true;
 
                             }
 
@@ -2274,7 +2866,8 @@
                                 mapping[key] === undefined
                             ) {
 
-                                mapping[key] = index;
+                                mapping[key] =
+                                    index;
 
                             }
 
@@ -2312,19 +2905,25 @@
                 );
 
 
-            if (sessionActive === 'true') {
+            if (
+                sessionActive === 'true'
+            ) {
 
-                loginScreen.style.display = 'none';
+                loginScreen.style.display =
+                    'none';
 
-                appContent.style.display = 'block';
+                appContent.style.display =
+                    'block';
 
                 loadInventory();
 
             } else {
 
-                loginScreen.style.display = 'flex';
+                loginScreen.style.display =
+                    'flex';
 
-                appContent.style.display = 'none';
+                appContent.style.display =
+                    'none';
 
             }
 
@@ -2344,14 +2943,17 @@
                 );
 
 
-            if (inputVal === MASTER_PASSWORD) {
+            if (
+                inputVal === MASTER_PASSWORD
+            ) {
 
                 sessionStorage.setItem(
                     'inv_session_active',
                     'true'
                 );
 
-                errorMsg.style.display = 'none';
+                errorMsg.style.display =
+                    'none';
 
                 document.getElementById(
                     'password-input'
@@ -2361,7 +2963,8 @@
 
             } else {
 
-                errorMsg.style.display = 'block';
+                errorMsg.style.display =
+                    'block';
 
             }
 
@@ -2396,7 +2999,9 @@
                 try {
 
                     appState.rawRows =
-                        JSON.parse(savedData);
+                        JSON.parse(
+                            savedData
+                        );
 
                     renderApp();
 
@@ -2439,7 +3044,9 @@
                         'keypress',
                         (e) => {
 
-                            if (e.key === 'Enter') {
+                            if (
+                                e.key === 'Enter'
+                            ) {
 
                                 handleLogin();
 
@@ -2471,7 +3078,9 @@
                         'input',
                         (e) => {
 
-                            appState.filters.contenedor =
+                            appState
+                                .filters
+                                .contenedor =
                                 e.target.value
                                     .trim()
                                     .toLowerCase();
@@ -2488,7 +3097,9 @@
                         'change',
                         (e) => {
 
-                            appState.filters.tipo =
+                            appState
+                                .filters
+                                .tipo =
                                 e.target.value;
 
                             renderFilteredList();
@@ -2503,7 +3114,9 @@
                         'change',
                         (e) => {
 
-                            appState.filters.proveedor =
+                            appState
+                                .filters
+                                .proveedor =
                                 e.target.value;
 
                             renderFilteredList();
@@ -2524,7 +3137,7 @@
 
 
         // ========================================================
-        // PROCESAR ARCHIVO EXCEL
+        // IMPORTAR EXCEL
         // ========================================================
 
         function handleFileImport(e) {
@@ -2544,218 +3157,270 @@
             reader.onload =
                 function(evt) {
 
-                    const data =
-                        new Uint8Array(
-                            evt.target.result
-                        );
+                    try {
+
+                        const data =
+                            new Uint8Array(
+                                evt.target.result
+                            );
 
 
-                    const workbook =
-                        XLSX.read(
-                            data,
-                            {
-                                type: 'array'
-                            }
-                        );
+                        const workbook =
+                            XLSX.read(
+                                data,
+                                {
+                                    type: 'array'
+                                }
+                            );
 
 
-                    const firstSheetName =
-                        workbook.SheetNames[0];
+                        const firstSheetName =
+                            workbook
+                                .SheetNames[0];
 
 
-                    const worksheet =
-                        workbook.Sheets[
-                            firstSheetName
-                        ];
+                        const worksheet =
+                            workbook
+                                .Sheets[
+                                    firstSheetName
+                                ];
 
 
-                    const rawJson =
-                        XLSX.utils.sheet_to_json(
-                            worksheet,
-                            {
-                                header: 1
-                            }
-                        );
-
-
-                    if (rawJson.length < 2) {
-
-                        alert(
-                            "El archivo no contiene suficientes filas de datos."
-                        );
-
-                        return;
-
-                    }
-
-
-                    const headers =
-                        rawJson[0];
-
-
-                    const colMapping =
-                        mapHeaders(headers);
-
-
-                    if (
-                        colMapping.contenedor === undefined
-                    ) {
-
-                        alert(
-                            "No se pudo detectar la columna 'contenedor'. Verifique el archivo."
-                        );
-
-                        return;
-
-                    }
-
-
-                    let processedRows = [];
-
-
-                    for (
-                        let i = 1;
-                        i < rawJson.length;
-                        i++
-                    ) {
-
-                        let row =
-                            rawJson[i];
+                        const rawJson =
+                            XLSX.utils.sheet_to_json(
+                                worksheet,
+                                {
+                                    header: 1
+                                }
+                            );
 
 
                         if (
-                            !row ||
-                            row.length === 0
+                            rawJson.length < 2
                         ) {
 
-                            continue;
+                            alert(
+                                "El archivo no contiene suficientes filas de datos."
+                            );
+
+                            return;
 
                         }
 
 
-                        let contVal =
-                            row[
-                                colMapping.contenedor
-                            ];
+                        const headers =
+                            rawJson[0];
+
+
+                        const colMapping =
+                            mapHeaders(
+                                headers
+                            );
 
 
                         if (
-                            contVal === undefined ||
-                            contVal === null ||
-                            String(contVal).trim() === ""
+                            colMapping
+                                .contenedor ===
+                            undefined
                         ) {
 
-                            continue;
+                            alert(
+                                "No se pudo detectar la columna 'contenedor'. Verifique el archivo."
+                            );
+
+                            return;
 
                         }
 
 
-                        let newRow = {};
+                        let processedRows =
+                            [];
 
 
                         for (
-                            let key in HEADER_MAP
+                            let i = 1;
+                            i < rawJson.length;
+                            i++
                         ) {
 
-                            let colIdx =
-                                colMapping[key];
-
-
-                            let val =
-                                colIdx !== undefined
-                                    ? row[colIdx]
-                                    : "";
+                            let row =
+                                rawJson[i];
 
 
                             if (
-                                key === 'nom_dep'
+                                !row ||
+                                row.length === 0
                             ) {
 
-                                val =
-                                    val
-                                        ? String(val)
-                                            .toUpperCase()
-                                            .trim()
-                                        : "MISC.";
-
-                            } else if (
-                                key === 'tipo'
-                            ) {
-
-                                val =
-                                    val
-                                        ? String(val)
-                                            .toUpperCase()
-                                            .trim()
-                                        : "GENERAL";
-
-                            } else if (
-                                key === 'proveedor'
-                            ) {
-
-                                val =
-                                    val
-                                        ? String(val)
-                                            .toUpperCase()
-                                            .trim()
-                                        : "VARIOS";
+                                continue;
 
                             }
 
 
-                            newRow[key] =
-                                val !== undefined
-                                    ? val
-                                    : "";
+                            let contVal =
+                                row[
+                                    colMapping
+                                        .contenedor
+                                ];
+
+
+                            if (
+                                contVal ===
+                                    undefined ||
+                                contVal ===
+                                    null ||
+                                String(
+                                    contVal
+                                ).trim() === ""
+                            ) {
+
+                                continue;
+
+                            }
+
+
+                            let newRow = {};
+
+
+                            for (
+                                let key in HEADER_MAP
+                            ) {
+
+                                let colIdx =
+                                    colMapping[
+                                        key
+                                    ];
+
+
+                                let val =
+                                    colIdx !==
+                                        undefined
+                                        ? row[
+                                            colIdx
+                                        ]
+                                        : "";
+
+
+                                if (
+                                    key ===
+                                    'nom_dep'
+                                ) {
+
+                                    val =
+                                        val
+                                            ? String(
+                                                val
+                                            )
+                                                .toUpperCase()
+                                                .trim()
+                                            : "MISC.";
+
+                                } else if (
+                                    key ===
+                                    'tipo'
+                                ) {
+
+                                    val =
+                                        val
+                                            ? String(
+                                                val
+                                            )
+                                                .toUpperCase()
+                                                .trim()
+                                            : "GENERAL";
+
+                                } else if (
+                                    key ===
+                                    'proveedor'
+                                ) {
+
+                                    val =
+                                        val
+                                            ? String(
+                                                val
+                                            )
+                                                .toUpperCase()
+                                                .trim()
+                                            : "VARIOS";
+
+                                }
+
+
+                                newRow[key] =
+                                    val !==
+                                        undefined
+                                        ? val
+                                        : "";
+
+                            }
+
+
+                            processedRows.push(
+                                newRow
+                            );
 
                         }
 
 
-                        processedRows.push(
-                            newRow
+                        appState.rawRows =
+                            processedRows;
+
+
+                        localStorage.setItem(
+                            'contenedor_inventario',
+                            JSON.stringify(
+                                processedRows
+                            )
+                        );
+
+
+                        appState.activeTab =
+                            "Todos";
+
+
+                        appState.filters = {
+
+                            contenedor: "",
+
+                            tipo: "",
+
+                            proveedor: ""
+
+                        };
+
+
+                        document
+                            .getElementById(
+                                'search-contenedor'
+                            )
+                            .value = "";
+
+
+                        renderApp();
+
+
+                        e.target.value = "";
+
+
+                    } catch (error) {
+
+                        console.error(
+                            "Error procesando Excel:",
+                            error
+                        );
+
+                        alert(
+                            "Ocurrió un error al procesar el archivo Excel."
                         );
 
                     }
-
-
-                    appState.rawRows =
-                        processedRows;
-
-
-                    localStorage.setItem(
-                        'contenedor_inventario',
-                        JSON.stringify(
-                            processedRows
-                        )
-                    );
-
-
-                    appState.activeTab =
-                        "Todos";
-
-
-                    appState.filters = {
-
-                        contenedor: "",
-
-                        tipo: "",
-
-                        proveedor: ""
-
-                    };
-
-
-                    document.getElementById(
-                        'search-contenedor'
-                    ).value = "";
-
-
-                    renderApp();
 
                 };
 
 
-            reader.readAsArrayBuffer(file);
+            reader.readAsArrayBuffer(
+                file
+            );
 
         }
 
@@ -2812,7 +3477,9 @@
                 r => {
 
                     if (r.nom_dep) {
-                        deps.add(r.nom_dep);
+                        deps.add(
+                            r.nom_dep
+                        );
                     }
 
                 }
@@ -2820,7 +3487,8 @@
 
 
             let sortedDeps =
-                Array.from(deps).sort();
+                Array.from(deps)
+                    .sort();
 
 
             let tabsContainer =
@@ -2832,7 +3500,12 @@
             let tabsHtml = `
 
                 <div
-                    class="tab ${appState.activeTab === 'Todos' ? 'active' : ''}"
+                    class="tab ${
+                        appState.activeTab ===
+                        'Todos'
+                            ? 'active'
+                            : ''
+                    }"
                     onclick="switchTab('Todos')"
                 >
                     🌐 TODOS
@@ -2847,10 +3520,17 @@
                     tabsHtml += `
 
                         <div
-                            class="tab ${appState.activeTab === dep ? 'active' : ''}"
-                            onclick="switchTab('${dep}')"
+                            class="tab ${
+                                appState.activeTab ===
+                                dep
+                                    ? 'active'
+                                    : ''
+                            }"
+                            onclick="switchTab(${JSON.stringify(dep)})"
                         >
-                            ${obtenerTextoConIcono(dep)}
+                            ${obtenerTextoConIcono(
+                                dep
+                            )}
                         </div>
 
                     `;
@@ -2903,8 +3583,11 @@
                     if (
                         text === depName ||
                         (
-                            depName === "Todos" &&
-                            text.includes("TODOS")
+                            depName ===
+                                "Todos" &&
+                            text.includes(
+                                "TODOS"
+                            )
                         )
                     ) {
 
@@ -2939,8 +3622,10 @@
             let filteredByTab =
                 appState.rawRows.filter(
                     r =>
-                        appState.activeTab === "Todos" ||
-                        r.nom_dep === appState.activeTab
+                        appState.activeTab ===
+                            "Todos" ||
+                        r.nom_dep ===
+                            appState.activeTab
                 );
 
 
@@ -2956,11 +3641,15 @@
                 r => {
 
                     if (r.tipo) {
-                        tipos.add(r.tipo);
+                        tipos.add(
+                            r.tipo
+                        );
                     }
 
                     if (r.proveedor) {
-                        proveedores.add(r.proveedor);
+                        proveedores.add(
+                            r.proveedor
+                        );
                     }
 
                 }
@@ -2993,20 +3682,27 @@
 
             Array.from(tipos)
                 .sort()
-                .forEach(t => {
+                .forEach(
+                    t => {
 
-                    tipoHtml += `
+                        tipoHtml += `
 
-                        <option
-                            value="${t}"
-                            ${prevTipo === t ? 'selected' : ''}
-                        >
-                            ${t}
-                        </option>
+                            <option
+                                value="${escapeHtml(t)}"
+                                ${
+                                    prevTipo ===
+                                    t
+                                        ? 'selected'
+                                        : ''
+                                }
+                            >
+                                ${escapeHtml(t)}
+                            </option>
 
-                    `;
+                        `;
 
-                });
+                    }
+                );
 
 
             selectTipo.innerHTML =
@@ -3025,20 +3721,27 @@
 
             Array.from(proveedores)
                 .sort()
-                .forEach(p => {
+                .forEach(
+                    p => {
 
-                    provHtml += `
+                        provHtml += `
 
-                        <option
-                            value="${p}"
-                            ${prevProv === p ? 'selected' : ''}
-                        >
-                            ${p}
-                        </option>
+                            <option
+                                value="${escapeHtml(p)}"
+                                ${
+                                    prevProv ===
+                                    p
+                                        ? 'selected'
+                                        : ''
+                                }
+                            >
+                                ${escapeHtml(p)}
+                            </option>
 
-                    `;
+                        `;
 
-                });
+                    }
+                );
 
 
             selectProv.innerHTML =
@@ -3054,7 +3757,7 @@
 
 
         // ========================================================
-        // OBTENER FILAS FILTRADAS
+        // FILAS FILTRADAS
         // ========================================================
 
         function getFilteredRows() {
@@ -3063,8 +3766,10 @@
                 r => {
 
                     if (
-                        appState.activeTab !== "Todos" &&
-                        r.nom_dep !== appState.activeTab
+                        appState.activeTab !==
+                            "Todos" &&
+                        r.nom_dep !==
+                            appState.activeTab
                     ) {
 
                         return false;
@@ -3073,11 +3778,16 @@
 
 
                     if (
-                        appState.filters.contenedor &&
-                        !String(r.contenedor)
+                        appState.filters
+                            .contenedor &&
+                        !String(
+                            r.contenedor
+                        )
                             .toLowerCase()
                             .includes(
-                                appState.filters.contenedor
+                                appState
+                                    .filters
+                                    .contenedor
                             )
                     ) {
 
@@ -3087,8 +3797,10 @@
 
 
                     if (
-                        appState.filters.tipo &&
-                        r.tipo !== appState.filters.tipo
+                        appState.filters
+                            .tipo &&
+                        r.tipo !==
+                            appState.filters.tipo
                     ) {
 
                         return false;
@@ -3097,9 +3809,10 @@
 
 
                     if (
-                        appState.filters.proveedor &&
+                        appState.filters
+                            .proveedor &&
                         r.proveedor !==
-                        appState.filters.proveedor
+                            appState.filters.proveedor
                     ) {
 
                         return false;
@@ -3135,7 +3848,9 @@
                         row.contenedor;
 
 
-                    if (!containersMap[cId]) {
+                    if (
+                        !containersMap[cId]
+                    ) {
 
                         containersMap[cId] = {
 
@@ -3143,11 +3858,14 @@
 
                             pacas: [],
 
-                            deps: new Set(),
+                            deps:
+                                new Set(),
 
-                            tipos: new Set(),
+                            tipos:
+                                new Set(),
 
-                            proveedores: new Set()
+                            proveedores:
+                                new Set()
 
                         };
 
@@ -3159,29 +3877,41 @@
                         .push(row);
 
 
-                    if (row.nom_dep) {
+                    if (
+                        row.nom_dep
+                    ) {
 
                         containersMap[cId]
                             .deps
-                            .add(row.nom_dep);
+                            .add(
+                                row.nom_dep
+                            );
 
                     }
 
 
-                    if (row.tipo) {
+                    if (
+                        row.tipo
+                    ) {
 
                         containersMap[cId]
                             .tipos
-                            .add(row.tipo);
+                            .add(
+                                row.tipo
+                            );
 
                     }
 
 
-                    if (row.proveedor) {
+                    if (
+                        row.proveedor
+                    ) {
 
                         containersMap[cId]
                             .proveedores
-                            .add(row.proveedor);
+                            .add(
+                                row.proveedor
+                            );
 
                     }
 
@@ -3192,7 +3922,8 @@
             let containersList =
                 Object.values(
                     containersMap
-                ).sort(
+                )
+                .sort(
                     (a, b) =>
                         String(a.id)
                             .localeCompare(
@@ -3252,6 +3983,10 @@
             containersList.forEach(
                 (c, idx) => {
 
+                    const reportId =
+                        `report-${idx}`;
+
+
                     let badgeDepsHtml =
                         Array.from(c.deps)
                             .map(
@@ -3265,21 +4000,24 @@
                         Array.from(c.tipos)
                             .map(
                                 t =>
-                                    `<span class="badge badge-tipo">${t}</span>`
+                                    `<span class="badge badge-tipo">${escapeHtml(t)}</span>`
                             )
                             .join(' ');
 
 
                     let badgeProvsHtml =
-                        Array.from(c.proveedores)
+                        Array.from(
+                            c.proveedores
+                        )
                             .map(
                                 p =>
-                                    `<span class="badge badge-prov">${p}</span>`
+                                    `<span class="badge badge-prov">${escapeHtml(p)}</span>`
                             )
                             .join(' ');
 
 
-                    let tableRowsHtml = "";
+                    let tableRowsHtml =
+                        "";
 
 
                     c.pacas.forEach(
@@ -3291,32 +4029,45 @@
 
                                     <td>
                                         <strong>
-                                            ${p.paca || '-'}
+                                            ${reportText(
+                                                p.paca
+                                            )}
                                         </strong>
                                     </td>
 
                                     <td>
-                                        ${p.tipo || '-'}
+                                        ${reportText(
+                                            p.tipo
+                                        )}
                                     </td>
 
                                     <td>
-                                        ${p.proveedor || '-'}
+                                        ${reportText(
+                                            p.proveedor
+                                        )}
                                     </td>
 
                                     <td>
-                                        ${p.descrip || '-'}
+                                        ${reportText(
+                                            p.descrip
+                                        )}
                                     </td>
 
                                     <td>
                                         ${
                                             p.peso
-                                                ? p.peso + ' lbs'
+                                                ? reportText(
+                                                    p.peso
+                                                ) +
+                                                  ' lbs'
                                                 : '-'
                                         }
                                     </td>
 
                                     <td>
-                                        ${p.fecha || '-'}
+                                        ${reportText(
+                                            p.fecha
+                                        )}
                                     </td>
 
                                 </tr>
@@ -3347,7 +4098,9 @@
                                             🚛
                                         </span>
 
-                                        ${c.id}
+                                        ${escapeHtml(
+                                            c.id
+                                        )}
 
                                     </span>
 
@@ -3355,6 +4108,7 @@
                                     <span class="paca-count">
 
                                         ${c.pacas.length}
+
                                         ${
                                             c.pacas.length === 1
                                                 ? 'PACA'
@@ -3380,6 +4134,26 @@
 
 
                             <div class="container-detail">
+
+                                <div class="container-report-tools">
+
+                                    <button
+                                        type="button"
+                                        class="btn-report-image"
+                                        onclick="
+                                            event.stopPropagation();
+                                            guardarContenedorComoImagen(
+                                                '${reportId}',
+                                                '${sanitizeFileName(c.id)}',
+                                                this
+                                            );
+                                        "
+                                    >
+                                        🖼️ GUARDAR COMO IMAGEN
+                                    </button>
+
+                                </div>
+
 
                                 <table>
 
@@ -3424,6 +4198,12 @@
 
                                 </table>
 
+
+                                ${createContainerReport(
+                                    c,
+                                    reportId
+                                )}
+
                             </div>
 
                         </div>
@@ -3436,6 +4216,562 @@
 
             mainContainer.innerHTML =
                 html;
+
+        }
+
+
+        // ========================================================
+        // CREAR REPORTE
+        // ========================================================
+
+        function createContainerReport(
+            container,
+            reportId
+        ) {
+
+            const pesoTotal =
+                calcularPesoTotal(
+                    container.pacas
+                );
+
+
+            const pesoTotalTexto =
+                pesoTotal.toLocaleString(
+                    'es-SV',
+                    {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2
+                    }
+                );
+
+
+            const departamentos =
+                Array.from(
+                    container.deps
+                )
+                .join(', ');
+
+
+            const tipos =
+                Array.from(
+                    container.tipos
+                )
+                .join(', ');
+
+
+            const proveedores =
+                Array.from(
+                    container.proveedores
+                )
+                .join(', ');
+
+
+            let reportRows = "";
+
+
+            container.pacas.forEach(
+                p => {
+
+                    reportRows += `
+
+                        <tr>
+
+                            <td>
+                                <strong>
+                                    ${reportText(
+                                        p.paca
+                                    )}
+                                </strong>
+                            </td>
+
+                            <td>
+                                ${reportText(
+                                    p.tipo
+                                )}
+                            </td>
+
+                            <td>
+                                ${reportText(
+                                    p.proveedor
+                                )}
+                            </td>
+
+                            <td>
+                                ${reportText(
+                                    p.descrip
+                                )}
+                            </td>
+
+                            <td>
+                                ${
+                                    p.peso
+                                        ? reportText(
+                                            p.peso
+                                        ) + " lbs"
+                                        : "-"
+                                }
+                            </td>
+
+                            <td>
+                                ${reportText(
+                                    p.fecha
+                                )}
+                            </td>
+
+                        </tr>
+
+                    `;
+
+                }
+            );
+
+
+            return `
+
+                <div class="report-scroll-wrapper">
+
+                    <div
+                        class="container-image-report"
+                        id="${reportId}"
+                    >
+
+                        <div class="report-header">
+
+                            <div class="report-brand">
+
+                                <div class="report-brand-icon">
+                                    📦
+                                </div>
+
+                                <div>
+
+                                    <div class="report-brand-name">
+                                        CONTROL DE INVENTARIO
+                                    </div>
+
+                                    <div class="report-brand-subtitle">
+                                        Reporte operativo de contenedor
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+
+                            <div class="report-title">
+                                REPORTE DE CONTENEDOR
+                            </div>
+
+
+                            <div class="report-container-id">
+                                ${reportText(
+                                    container.id
+                                )}
+                            </div>
+
+                        </div>
+
+
+                        <div class="report-summary-grid">
+
+                            <div class="report-summary-item">
+
+                                <div class="report-summary-label">
+                                    Contenedor
+                                </div>
+
+                                <div class="report-summary-value">
+                                    ${reportText(
+                                        container.id
+                                    )}
+                                </div>
+
+                            </div>
+
+
+                            <div class="report-summary-item">
+
+                                <div class="report-summary-label">
+                                    Proveedor
+                                </div>
+
+                                <div class="report-summary-value">
+                                    ${reportText(
+                                        proveedores
+                                    )}
+                                </div>
+
+                            </div>
+
+
+                            <div class="report-summary-item">
+
+                                <div class="report-summary-label">
+                                    Departamento
+                                </div>
+
+                                <div class="report-summary-value">
+                                    ${reportText(
+                                        departamentos
+                                    )}
+                                </div>
+
+                            </div>
+
+
+                            <div class="report-summary-item">
+
+                                <div class="report-summary-label">
+                                    Tipo
+                                </div>
+
+                                <div class="report-summary-value">
+                                    ${reportText(
+                                        tipos
+                                    )}
+                                </div>
+
+                            </div>
+
+
+                            <div class="report-summary-item">
+
+                                <div class="report-summary-label">
+                                    Total de pacas
+                                </div>
+
+                                <div class="report-summary-value">
+                                    ${container.pacas.length}
+                                </div>
+
+                            </div>
+
+
+                            <div class="report-summary-item">
+
+                                <div class="report-summary-label">
+                                    Peso total
+                                </div>
+
+                                <div class="report-summary-value">
+                                    ${pesoTotalTexto} lbs
+                                </div>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="report-section-title">
+                            Detalle de pacas
+                        </div>
+
+
+                        <div class="report-table-wrapper">
+
+                            <table class="report-table">
+
+                                <thead>
+
+                                    <tr>
+
+                                        <th class="report-col-paca">
+                                            PACA
+                                        </th>
+
+                                        <th class="report-col-tipo">
+                                            TIPO
+                                        </th>
+
+                                        <th class="report-col-prov">
+                                            PROVEEDOR
+                                        </th>
+
+                                        <th class="report-col-desc">
+                                            DESCRIPCIÓN
+                                        </th>
+
+                                        <th class="report-col-peso">
+                                            PESO
+                                        </th>
+
+                                        <th class="report-col-fecha">
+                                            FECHA
+                                        </th>
+
+                                    </tr>
+
+                                </thead>
+
+
+                                <tbody>
+
+                                    ${reportRows}
+
+                                </tbody>
+
+                            </table>
+
+                        </div>
+
+
+                        <div class="report-footer">
+
+                            <div>
+                                <strong>
+                                    CONTROL OPERATIVO
+                                </strong>
+                                · Inventario de contenedores
+                            </div>
+
+                            <div>
+                                ${container.pacas.length}
+                                ${
+                                    container.pacas.length === 1
+                                        ? 'paca'
+                                        : 'pacas'
+                                }
+                                ·
+                                ${pesoTotalTexto} lbs
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            `;
+
+        }
+
+
+        // ========================================================
+        // GUARDAR CONTENEDOR COMO IMAGEN
+        // ========================================================
+
+        async function guardarContenedorComoImagen(
+            reportId,
+            containerFileName,
+            button
+        ) {
+
+            const report =
+                document.getElementById(
+                    reportId
+                );
+
+
+            if (!report) {
+
+                alert(
+                    "No se encontró el reporte del contenedor."
+                );
+
+                return;
+
+            }
+
+
+            if (
+                typeof html2canvas ===
+                "undefined"
+            ) {
+
+                alert(
+                    "No se pudo cargar el módulo de generación de imágenes. Verifica tu conexión a Internet."
+                );
+
+                return;
+
+            }
+
+
+            const textoOriginal =
+                button.innerHTML;
+
+
+            try {
+
+                button.disabled =
+                    true;
+
+                button.innerHTML =
+                    "⏳ GENERANDO REPORTE...";
+
+
+                await new Promise(
+                    resolve =>
+                        setTimeout(
+                            resolve,
+                            150
+                        )
+                );
+
+
+                const reportHeight =
+                    report.scrollHeight;
+
+
+                let scale = 2;
+
+
+                if (
+                    reportHeight > 12000
+                ) {
+
+                    scale = 1.25;
+
+                }
+
+
+                const canvas =
+                    await html2canvas(
+                        report,
+                        {
+
+                            scale: scale,
+
+                            useCORS: true,
+
+                            allowTaint: false,
+
+                            backgroundColor:
+                                "#ffffff",
+
+                            logging: false,
+
+                            scrollX: 0,
+
+                            scrollY: 0,
+
+                            width:
+                                report.scrollWidth,
+
+                            height:
+                                report.scrollHeight,
+
+                            windowWidth:
+                                report.scrollWidth,
+
+                            windowHeight:
+                                report.scrollHeight
+
+                        }
+                    );
+
+
+                const blob =
+                    await new Promise(
+                        (resolve, reject) => {
+
+                            canvas.toBlob(
+                                result => {
+
+                                    if (
+                                        result
+                                    ) {
+
+                                        resolve(
+                                            result
+                                        );
+
+                                    } else {
+
+                                        reject(
+                                            new Error(
+                                                "No fue posible crear la imagen."
+                                            )
+                                        );
+
+                                    }
+
+                                },
+                                "image/png"
+                            );
+
+                        }
+                    );
+
+
+                const url =
+                    URL.createObjectURL(
+                        blob
+                    );
+
+
+                const link =
+                    document.createElement(
+                        "a"
+                    );
+
+
+                link.href = url;
+
+                link.download =
+                    `Contenedor_${containerFileName}.png`;
+
+
+                document.body.appendChild(
+                    link
+                );
+
+
+                link.click();
+
+
+                link.remove();
+
+
+                setTimeout(
+                    () => {
+
+                        URL.revokeObjectURL(
+                            url
+                        );
+
+                    },
+                    1000
+                );
+
+
+                button.innerHTML =
+                    "✅ IMAGEN GENERADA";
+
+
+                setTimeout(
+                    () => {
+
+                        button.innerHTML =
+                            textoOriginal;
+
+                    },
+                    1800
+                );
+
+
+            } catch (error) {
+
+                console.error(
+                    "Error generando reporte:",
+                    error
+                );
+
+
+                alert(
+                    "No fue posible generar la imagen del reporte."
+                );
+
+
+                button.innerHTML =
+                    textoOriginal;
+
+            } finally {
+
+                button.disabled =
+                    false;
+
+            }
 
         }
 
@@ -3464,7 +4800,7 @@
 
 
         // ========================================================
-        // ACTUALIZAR ESTADÍSTICAS
+        // ESTADÍSTICAS
         // ========================================================
 
         function updateStats(
@@ -3487,7 +4823,7 @@
 
 
         // ========================================================
-        // EXPORTAR A EXCEL
+        // EXPORTAR EXCEL
         // ========================================================
 
         function exportToExcel() {
@@ -3514,28 +4850,36 @@
                     p => ({
 
                         "Contenedor":
-                            p.contenedor || '',
+                            p.contenedor ||
+                            '',
 
                         "N° Paca":
-                            p.paca || '',
+                            p.paca ||
+                            '',
 
                         "Rubro / Departamento":
-                            p.nom_dep || '',
+                            p.nom_dep ||
+                            '',
 
                         "Tipo":
-                            p.tipo || '',
+                            p.tipo ||
+                            '',
 
                         "Proveedor":
-                            p.proveedor || '',
+                            p.proveedor ||
+                            '',
 
                         "Descripción":
-                            p.descrip || '',
+                            p.descrip ||
+                            '',
 
                         "Peso (Lbs)":
-                            p.peso || '',
+                            p.peso ||
+                            '',
 
                         "Fecha":
-                            p.fecha || ''
+                            p.fecha ||
+                            ''
 
                     })
                 );
@@ -3553,7 +4897,10 @@
 
             let nombreHoja =
                 appState.activeTab
-                    .substring(0, 31);
+                    .substring(
+                        0,
+                        31
+                    );
 
 
             XLSX.utils.book_append_sheet(
@@ -3566,7 +4913,10 @@
             let nombreArchivo =
                 `Reporte_${
                     appState.activeTab
-                        .replace(/ /g, "_")
+                        .replace(
+                            / /g,
+                            "_"
+                        )
                 }.xlsx`;
 
 
