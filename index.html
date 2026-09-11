@@ -3,258 +3,778 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <title>Control de Inventario de Contenedores</title>
+
     <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#1e293b">
+    <meta name="theme-color" content="#071426">
     <link rel="apple-touch-icon" href="icon-192.png">
+
     <!-- SheetJS CDN -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
     <style>
-        /* Variables base para Modo Claro (Default) */
+        /* =========================================================
+           SISTEMA VISUAL
+           ========================================================= */
+
         :root {
-            --primary: #2563eb;
-            --primary-dark: #1d4ed8;
-            --bg: #f8fafc;
-            --surface: #ffffff;
-            --text: #1e293b;
-            --text-light: #64748b;
-            --border: #e2e8f0;
-            --accent: #0f172a;
-            --card-header: #ffffff;
-            --detail-bg: #fafafa;
-            --table-th: #f1f5f9;
-            --badge-dep-bg: #f1f5f9;
-            --badge-dep-text: #475569;
-            --badge-tipo-bg: #f0fdf4;
-            --badge-tipo-text: #166534;
-            --badge-prov-bg: #fff7ed;
-            --badge-prov-text: #9a3412;
-            --paca-count-bg: #eff6ff;
-            --paca-count-text: #2563eb;
-            --login-overlay: rgba(15, 23, 42, 0.6);
+            --bg: #06111f;
+            --bg-secondary: #0a1728;
+            --surface: #0d1d31;
+            --surface-2: #10243b;
+            --surface-3: #132b45;
+
+            --primary: #2f8cff;
+            --primary-dark: #1769c2;
+            --primary-soft: rgba(47, 140, 255, 0.14);
+
+            --success: #22c55e;
+            --success-soft: rgba(34, 197, 94, 0.14);
+
+            --warning: #f59e0b;
+            --warning-soft: rgba(245, 158, 11, 0.14);
+
+            --danger: #ef4444;
+            --danger-soft: rgba(239, 68, 68, 0.14);
+
+            --text: #f8fafc;
+            --text-secondary: #cbd5e1;
+            --text-light: #8293aa;
+
+            --border: rgba(148, 163, 184, 0.14);
+            --border-strong: rgba(148, 163, 184, 0.24);
+
+            --accent: #071426;
+
+            --card-header: #0e2136;
+            --detail-bg: #081728;
+            --table-th: #10263e;
+
+            --badge-dep-bg: rgba(47, 140, 255, 0.14);
+            --badge-dep-text: #75b5ff;
+
+            --badge-tipo-bg: rgba(34, 197, 94, 0.13);
+            --badge-tipo-text: #6ee7a0;
+
+            --badge-prov-bg: rgba(245, 158, 11, 0.13);
+            --badge-prov-text: #f8c66a;
+
+            --paca-count-bg: rgba(47, 140, 255, 0.14);
+            --paca-count-text: #72b0ff;
+
+            --login-overlay: rgba(2, 8, 18, 0.96);
+
+            --shadow-sm: 0 4px 14px rgba(0, 0, 0, 0.18);
+            --shadow-md: 0 12px 32px rgba(0, 0, 0, 0.24);
+            --shadow-lg: 0 24px 70px rgba(0, 0, 0, 0.35);
+
+            --radius-sm: 8px;
+            --radius-md: 12px;
+            --radius-lg: 16px;
         }
 
-        /* Variables adaptables para Modo Oscuro Dinámico */
-        @media (prefers-color-scheme: dark) {
-            :root {
-                --primary: #3b82f6;
-                --primary-dark: #2563eb;
-                --bg: #0f172a;
-                --surface: #1e293b;
-                --text: #f8fafc;
-                --text-light: #94a3b8;
-                --border: #334155;
-                --accent: #020617;
-                --card-header: #1e293b;
-                --detail-bg: #111827;
-                --table-th: #1f2937;
-                --badge-dep-bg: #334155;
-                --badge-dep-text: #e2e8f0;
-                --badge-tipo-bg: #14532d;
-                --badge-tipo-text: #bbf7d0;
-                --badge-prov-bg: #7c2d12;
-                --badge-prov-text: #fed7aa;
-                --paca-count-bg: #1e3a8a;
-                --paca-count-text: #93c5fd;
-                --login-overlay: rgba(2, 6, 17, 0.9);
-            }
-        }
+        /* =========================================================
+           RESET
+           ========================================================= */
 
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            font-family: "Courier New", Courier, monospace;
+        }
+
+        html {
+            scroll-behavior: smooth;
         }
 
         body {
-            background-color: var(--bg);
+            background:
+                radial-gradient(
+                    circle at 10% 0%,
+                    rgba(47, 140, 255, 0.08),
+                    transparent 30%
+                ),
+                radial-gradient(
+                    circle at 90% 20%,
+                    rgba(30, 64, 175, 0.08),
+                    transparent 30%
+                ),
+                var(--bg);
+
             color: var(--text);
             line-height: 1.5;
+            min-height: 100vh;
             padding-bottom: 40px;
         }
 
-        /* Pantalla de Login */
+        button,
+        input,
+        select {
+            font-family: inherit;
+        }
+
+        button {
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* =========================================================
+           LOGIN
+           ========================================================= */
+
         #login-screen {
             position: fixed;
-            top: 0;
-            left: 0;
+            inset: 0;
             width: 100vw;
             height: 100vh;
-            background-color: var(--login-overlay);
-            backdrop-filter: blur(8px);
+
+            background:
+                radial-gradient(
+                    circle at 50% 30%,
+                    rgba(47, 140, 255, 0.12),
+                    transparent 35%
+                ),
+                var(--login-overlay);
+
+            backdrop-filter: blur(12px);
+
             z-index: 2000;
+
             display: flex;
             align-items: center;
             justify-content: center;
+
             padding: 20px;
         }
 
         .login-card {
-            background: var(--surface);
-            padding: 32px;
-            border-radius: 16px;
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+            position: relative;
+
+            background:
+                linear-gradient(
+                    145deg,
+                    rgba(17, 39, 64, 0.98),
+                    rgba(7, 20, 38, 0.98)
+                );
+
+            padding: 38px 34px;
+
+            border-radius: 20px;
+
             width: 100%;
-            max-width: 400px;
+            max-width: 430px;
+
             text-align: center;
-            border: 1px solid var(--border);
+
+            border: 1px solid rgba(47, 140, 255, 0.22);
+
+            box-shadow:
+                0 0 0 1px rgba(255,255,255,0.02),
+                0 30px 90px rgba(0,0,0,0.5);
+
+            overflow: hidden;
+
+            animation: loginAppear 0.45s ease-out;
+        }
+
+        .login-card::before {
+            content: "";
+            position: absolute;
+
+            top: 0;
+            left: 0;
+            right: 0;
+
+            height: 3px;
+
+            background:
+                linear-gradient(
+                    90deg,
+                    transparent,
+                    var(--primary),
+                    transparent
+                );
+        }
+
+        .login-icon {
+            width: 74px;
+            height: 74px;
+
+            margin: 0 auto 20px;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            border-radius: 20px;
+
+            background: var(--primary-soft);
+
+            border: 1px solid rgba(47, 140, 255, 0.2);
+
+            font-size: 2.3rem;
+
+            animation: floatingIcon 3s ease-in-out infinite;
         }
 
         .login-card h2 {
             margin-bottom: 8px;
-            font-size: 1.6rem;
+
+            font-size: 1.45rem;
+
             color: var(--text);
+
+            letter-spacing: 0.5px;
         }
 
         .login-card p {
             color: var(--text-light);
-            font-size: 0.9rem;
-            margin-bottom: 24px;
+
+            font-size: 0.8rem;
+
+            margin-bottom: 26px;
+
+            line-height: 1.7;
         }
 
         .login-card input[type="password"] {
             width: 100%;
-            padding: 12px;
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            margin-bottom: 16px;
-            font-size: 1rem;
-            background: var(--bg);
+
+            padding: 14px 16px;
+
+            border: 1px solid var(--border-strong);
+
+            border-radius: 10px;
+
+            margin-bottom: 14px;
+
+            font-size: 0.95rem;
+
+            background: rgba(3, 12, 24, 0.8);
+
             color: var(--text);
+
             text-align: center;
+
             outline: none;
+
+            transition:
+                border-color 0.2s,
+                box-shadow 0.2s,
+                background 0.2s;
+        }
+
+        .login-card input[type="password"]::placeholder {
+            color: #62748c;
         }
 
         .login-card input[type="password"]:focus {
             border-color: var(--primary);
+
+            background: rgba(3, 12, 24, 0.95);
+
+            box-shadow:
+                0 0 0 3px rgba(47, 140, 255, 0.12);
         }
 
         .login-card .error-msg {
-            color: #ef4444;
-            font-size: 0.85rem;
+            color: #f87171;
+
+            font-size: 0.78rem;
+
             margin-bottom: 12px;
+
             display: none;
         }
 
-        .app-content {
-            display: none; /* Se activa tras el login */
+        .login-footer {
+            margin-top: 22px;
+
+            color: #53657c;
+
+            font-size: 0.65rem;
+
+            letter-spacing: 0.5px;
         }
 
+        @keyframes loginAppear {
+            from {
+                opacity: 0;
+                transform: translateY(15px) scale(0.98);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        @keyframes floatingIcon {
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-4px);
+            }
+        }
+
+        /* =========================================================
+           APP
+           ========================================================= */
+
+        .app-content {
+            display: none;
+            min-height: 100vh;
+        }
+
+        /* =========================================================
+           HEADER EMPRESARIAL
+           ========================================================= */
+
         header {
-            background-color: var(--accent);
-            color: white;
-            padding: 16px;
             position: sticky;
             top: 0;
             z-index: 100;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+
+            min-height: 72px;
+
+            background:
+                linear-gradient(
+                    135deg,
+                    rgba(8, 25, 45, 0.98),
+                    rgba(5, 17, 31, 0.98)
+                );
+
+            color: white;
+
+            padding: 12px 24px;
+
+            border-bottom: 1px solid rgba(47, 140, 255, 0.15);
+
+            box-shadow:
+                0 8px 30px rgba(0,0,0,0.28);
+
             display: flex;
+
             justify-content: space-between;
+
             align-items: center;
+
+            gap: 20px;
+
+            backdrop-filter: blur(12px);
+        }
+
+        .brand {
+            display: flex;
+
+            align-items: center;
+
+            gap: 12px;
+
+            min-width: 0;
+        }
+
+        .brand-icon {
+            width: 42px;
+            height: 42px;
+
+            flex: 0 0 auto;
+
+            display: flex;
+
+            align-items: center;
+            justify-content: center;
+
+            border-radius: 11px;
+
+            background: rgba(47, 140, 255, 0.13);
+
+            border: 1px solid rgba(47, 140, 255, 0.22);
+
+            font-size: 1.35rem;
+
+            animation: floatingIcon 4s ease-in-out infinite;
+        }
+
+        .brand-info {
+            min-width: 0;
         }
 
         header h1 {
-            font-size: 1.2rem;
+            font-size: 1rem;
+
             font-weight: 700;
+
+            color: #ffffff;
+
+            letter-spacing: 0.5px;
+
+            white-space: nowrap;
+        }
+
+        .header-subtitle {
+            color: #71849d;
+
+            font-size: 0.62rem;
+
+            margin-top: 2px;
+
+            letter-spacing: 0.7px;
+
+            text-transform: uppercase;
         }
 
         .header-actions {
             display: flex;
+
             gap: 8px;
+
             align-items: center;
+
+            flex-shrink: 0;
         }
 
+        /* =========================================================
+           BUTTONS
+           ========================================================= */
+
         .btn {
-            background-color: var(--primary);
+            background:
+                linear-gradient(
+                    135deg,
+                    var(--primary),
+                    #2475d0
+                );
+
             color: white;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 6px;
-            font-size: 0.9rem;
-            font-weight: 600;
+
+            border: 1px solid rgba(255,255,255,0.05);
+
+            padding: 10px 15px;
+
+            border-radius: 9px;
+
+            font-size: 0.75rem;
+
+            font-weight: 700;
+
             cursor: pointer;
+
             display: inline-flex;
+
             align-items: center;
+
+            justify-content: center;
+
             gap: 8px;
-            transition: background 0.2s;
+
+            transition:
+                transform 0.18s ease,
+                background 0.18s ease,
+                box-shadow 0.18s ease;
+
+            box-shadow:
+                0 5px 16px rgba(47, 140, 255, 0.15);
         }
 
         .btn:hover {
-            background-color: var(--primary-dark);
+            background:
+                linear-gradient(
+                    135deg,
+                    #3d9aff,
+                    var(--primary)
+                );
+
+            transform: translateY(-1px);
+
+            box-shadow:
+                0 8px 20px rgba(47, 140, 255, 0.22);
+        }
+
+        .btn:active {
+            transform: translateY(0);
         }
 
         .btn-secondary {
-            background-color: #475569;
+            background:
+                linear-gradient(
+                    135deg,
+                    #172d47,
+                    #102238
+                );
+
+            color: #dbeafe;
+
+            border-color: rgba(148, 163, 184, 0.16);
+
+            box-shadow: none;
         }
+
         .btn-secondary:hover {
-            background-color: #334155;
+            background:
+                linear-gradient(
+                    135deg,
+                    #1c3857,
+                    #142a43
+                );
         }
 
         .btn-logout {
-            background-color: transparent;
-            border: 1px solid #ef4444;
-            color: #ef4444;
-            padding: 6px 12px;
-            font-size: 0.8rem;
+            background: transparent;
+
+            border: 1px solid rgba(239, 68, 68, 0.5);
+
+            color: #f87171;
+
+            padding: 9px 12px;
+
+            font-size: 0.72rem;
+
+            box-shadow: none;
         }
+
         .btn-logout:hover {
-            background-color: #ef4444;
-            color: white;
+            background: rgba(239, 68, 68, 0.12);
+
+            border-color: #ef4444;
+
+            color: #fca5a5;
+
+            box-shadow: none;
         }
 
         .file-input-wrapper {
             position: relative;
+
             overflow: hidden;
+
             display: inline-block;
         }
 
         .file-input-wrapper input[type=file] {
             font-size: 100px;
+
             position: absolute;
+
             left: 0;
             top: 0;
+
             opacity: 0;
+
             cursor: pointer;
+
+            width: 100%;
+            height: 100%;
         }
 
-        /* Stats Cards */
-        .stats-container {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-            padding: 16px;
+        /* =========================================================
+           DASHBOARD
+           ========================================================= */
+
+        .dashboard-heading {
+            padding:
+                28px 24px
+                6px;
+
+            max-width: 1500px;
+
+            margin: 0 auto;
         }
 
-        .stat-card {
-            background: var(--surface);
-            padding: 16px;
-            border-radius: 12px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-            border: 1px solid var(--border);
-            text-align: center;
-        }
-
-        .stat-card .value {
-            font-size: 1.8rem;
-            font-weight: 700;
+        .dashboard-heading .eyebrow {
             color: var(--primary);
+
+            font-size: 0.65rem;
+
+            font-weight: 700;
+
+            letter-spacing: 1.5px;
+
+            text-transform: uppercase;
+
+            margin-bottom: 5px;
         }
 
-        .stat-card .label {
-            font-size: 0.85rem;
+        .dashboard-heading h2 {
+            font-size: 1.25rem;
+
+            color: var(--text);
+
+            letter-spacing: 0.4px;
+        }
+
+        .dashboard-heading p {
             color: var(--text-light);
+
+            font-size: 0.7rem;
+
             margin-top: 4px;
         }
 
-        /* Tabs Scrollable Container */
+        /* =========================================================
+           STATS
+           ========================================================= */
+
+        .stats-container {
+            max-width: 1500px;
+
+            margin: 0 auto;
+
+            display: grid;
+
+            grid-template-columns:
+                repeat(2, minmax(0, 1fr));
+
+            gap: 14px;
+
+            padding: 18px 24px;
+        }
+
+        .stat-card {
+            position: relative;
+
+            background:
+                linear-gradient(
+                    145deg,
+                    rgba(16, 36, 59, 0.95),
+                    rgba(9, 26, 44, 0.95)
+                );
+
+            padding: 18px 20px;
+
+            border-radius: 14px;
+
+            border: 1px solid var(--border);
+
+            box-shadow: var(--shadow-sm);
+
+            text-align: left;
+
+            overflow: hidden;
+
+            transition:
+                transform 0.2s ease,
+                border-color 0.2s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+
+            border-color:
+                rgba(47, 140, 255, 0.25);
+        }
+
+        .stat-card::after {
+            content: "";
+
+            position: absolute;
+
+            width: 80px;
+            height: 80px;
+
+            right: -25px;
+            top: -25px;
+
+            border-radius: 50%;
+
+            background: rgba(47, 140, 255, 0.06);
+        }
+
+        .stat-card .stat-icon {
+            width: 34px;
+            height: 34px;
+
+            display: flex;
+
+            align-items: center;
+            justify-content: center;
+
+            border-radius: 9px;
+
+            background: var(--primary-soft);
+
+            margin-bottom: 10px;
+
+            font-size: 1rem;
+        }
+
+        .stat-card .value {
+            font-size: 1.65rem;
+
+            font-weight: 700;
+
+            color: #ffffff;
+
+            line-height: 1.1;
+
+            letter-spacing: 0.5px;
+        }
+
+        .stat-card .label {
+            font-size: 0.67rem;
+
+            color: var(--text-light);
+
+            margin-top: 6px;
+
+            text-transform: uppercase;
+
+            letter-spacing: 0.5px;
+        }
+
+        /* =========================================================
+           TABS
+           ========================================================= */
+
+        .tabs-section {
+            max-width: 1500px;
+
+            margin: 0 auto;
+
+            padding: 0 24px;
+        }
+
+        .tabs-label {
+            color: var(--text-light);
+
+            font-size: 0.65rem;
+
+            text-transform: uppercase;
+
+            letter-spacing: 1px;
+
+            margin-bottom: 8px;
+
+            padding-left: 2px;
+        }
+
         .tabs-wrapper {
             overflow-x: auto;
+
             white-space: nowrap;
-            background: var(--surface);
-            border-bottom: 1px solid var(--border);
-            padding: 0 8px;
+
+            background:
+                linear-gradient(
+                    135deg,
+                    rgba(13, 29, 49, 0.96),
+                    rgba(8, 23, 40, 0.96)
+                );
+
+            border: 1px solid var(--border);
+
+            border-radius: 12px;
+
+            padding: 7px;
+
             -webkit-overflow-scrolling: touch;
+
+            scrollbar-width: none;
+
+            box-shadow: var(--shadow-sm);
         }
 
         .tabs-wrapper::-webkit-scrollbar {
@@ -262,692 +782,2802 @@
         }
 
         .tab {
-            display: inline-block;
-            padding: 12px 16px;
-            font-size: 0.95rem;
-            font-weight: 600;
-            color: var(--text-light);
-            border-bottom: 3px solid transparent;
+            display: inline-flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            gap: 6px;
+
+            padding: 10px 14px;
+
+            margin-right: 4px;
+
+            font-size: 0.68rem;
+
+            font-weight: 700;
+
+            color: #71849d;
+
+            border: 1px solid transparent;
+
+            border-radius: 8px;
+
             cursor: pointer;
+
+            transition:
+                background 0.18s ease,
+                color 0.18s ease,
+                border-color 0.18s ease,
+                transform 0.18s ease;
+        }
+
+        .tab:hover {
+            color: #dbeafe;
+
+            background: rgba(47, 140, 255, 0.07);
+
+            transform: translateY(-1px);
         }
 
         .tab.active {
-            color: var(--primary);
-            border-bottom-color: var(--primary);
+            color: #ffffff;
+
+            background:
+                linear-gradient(
+                    135deg,
+                    rgba(47, 140, 255, 0.22),
+                    rgba(47, 140, 255, 0.10)
+                );
+
+            border-color:
+                rgba(47, 140, 255, 0.25);
+
+            box-shadow:
+                0 4px 14px rgba(47, 140, 255, 0.08);
         }
 
-        /* Filters Section */
+        /* =========================================================
+           FILTERS
+           ========================================================= */
+
         .filters-container {
-            background: var(--surface);
-            padding: 16px;
-            border-bottom: 1px solid var(--border);
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 12px;
-        }
+            max-width: 1500px;
 
-        @media (min-width: 768px) {
-            .filters-container {
-                grid-template-columns: 1fr 1fr 1fr;
-            }
-            .stats-container {
-                grid-template-columns: 1fr 1fr 1fr 1fr;
-            }
-        }
+            margin: 18px auto 0;
 
-        .search-wrapper, .select-wrapper {
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-        }
+            background:
+                linear-gradient(
+                    145deg,
+                    rgba(13, 29, 49, 0.96),
+                    rgba(8, 23, 40, 0.96)
+                );
 
-        .search-wrapper label, .select-wrapper label {
-            font-size: 0.8rem;
-            font-weight: 600;
-            color: var(--text-light);
-        }
+            padding: 18px;
 
-        input[type="text"], select {
-            width: 100%;
-            padding: 10px;
             border: 1px solid var(--border);
-            border-radius: 8px;
-            font-size: 0.95rem;
-            background-color: var(--bg);
-            color: var(--text);
-            outline: none;
+
+            border-radius: 14px;
+
+            display: grid;
+
+            grid-template-columns: 1fr;
+
+            gap: 14px;
+
+            box-shadow: var(--shadow-sm);
         }
 
-        input[type="text"]:focus, select:focus {
-            border-color: var(--primary);
+        .filters-heading {
+            grid-column: 1 / -1;
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 8px;
+
+            color: #dbeafe;
+
+            font-size: 0.7rem;
+
+            font-weight: 700;
+
+            text-transform: uppercase;
+
+            letter-spacing: 0.8px;
+
+            padding-bottom: 4px;
+
+            border-bottom: 1px solid var(--border);
         }
+
+        .filters-heading span {
+            color: var(--primary);
+        }
+
+        .search-wrapper,
+        .select-wrapper {
+            display: flex;
+
+            flex-direction: column;
+
+            gap: 6px;
+        }
+
+        .search-wrapper label,
+        .select-wrapper label {
+            font-size: 0.65rem;
+
+            font-weight: 700;
+
+            color: var(--text-light);
+
+            text-transform: uppercase;
+
+            letter-spacing: 0.4px;
+        }
+
+        input[type="text"],
+        select {
+            width: 100%;
+
+            padding: 11px 12px;
+
+            border: 1px solid var(--border-strong);
+
+            border-radius: 9px;
+
+            font-size: 0.72rem;
+
+            background:
+                rgba(3, 13, 25, 0.75);
+
+            color: var(--text);
+
+            outline: none;
+
+            transition:
+                border-color 0.2s,
+                box-shadow 0.2s,
+                background 0.2s;
+        }
+
+        input[type="text"]::placeholder {
+            color: #52657c;
+        }
+
+        input[type="text"]:focus,
+        select:focus {
+            border-color: var(--primary);
+
+            background:
+                rgba(3, 13, 25, 0.95);
+
+            box-shadow:
+                0 0 0 3px rgba(47, 140, 255, 0.09);
+        }
+
+        select option {
+            background: #0d1d31;
+
+            color: white;
+        }
+
+        /* =========================================================
+           ACTION BAR
+           ========================================================= */
 
         .action-bar {
-            padding: 16px;
+            max-width: 1500px;
+
+            margin: 12px auto 0;
+
+            padding: 0 0;
+
             display: flex;
+
             justify-content: flex-end;
-            background: var(--surface);
         }
 
-        /* Container Cards */
-        .containers-list {
-            padding: 16px;
+        /* =========================================================
+           CONTAINERS
+           ========================================================= */
+
+        .containers-section {
+            max-width: 1500px;
+
+            margin: 0 auto;
+        }
+
+        .list-heading {
             display: flex;
+
+            align-items: center;
+
+            justify-content: space-between;
+
+            gap: 10px;
+
+            padding: 26px 24px 10px;
+        }
+
+        .list-heading h3 {
+            font-size: 0.78rem;
+
+            color: #dbeafe;
+
+            text-transform: uppercase;
+
+            letter-spacing: 0.8px;
+        }
+
+        .list-heading span {
+            color: var(--text-light);
+
+            font-size: 0.65rem;
+        }
+
+        .containers-list {
+            padding: 10px 24px 30px;
+
+            display: flex;
+
             flex-direction: column;
+
             gap: 12px;
         }
 
         .container-card {
-            background: var(--surface);
-            border-radius: 12px;
+            background:
+                linear-gradient(
+                    145deg,
+                    rgba(14, 33, 54, 0.98),
+                    rgba(8, 23, 40, 0.98)
+                );
+
+            border-radius: 14px;
+
             border: 1px solid var(--border);
-            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+
+            box-shadow: var(--shadow-sm);
+
             overflow: hidden;
+
+            transition:
+                border-color 0.2s ease,
+                box-shadow 0.2s ease,
+                transform 0.2s ease;
+        }
+
+        .container-card:hover {
+            border-color:
+                rgba(47, 140, 255, 0.22);
+
+            box-shadow: var(--shadow-md);
+        }
+
+        .container-card.expanded {
+            border-color:
+                rgba(47, 140, 255, 0.3);
+
+            box-shadow:
+                0 16px 40px rgba(0, 0, 0, 0.28);
         }
 
         .container-header {
-            padding: 16px;
-            background: var(--card-header);
+            padding: 16px 18px;
+
+            background:
+                linear-gradient(
+                    90deg,
+                    rgba(16, 36, 59, 0.95),
+                    rgba(13, 29, 49, 0.95)
+                );
+
             cursor: pointer;
+
             user-select: none;
+
+            transition:
+                background 0.2s ease;
+        }
+
+        .container-header:hover {
+            background:
+                linear-gradient(
+                    90deg,
+                    rgba(19, 44, 71, 0.98),
+                    rgba(14, 34, 55, 0.98)
+                );
         }
 
         .container-title-row {
             display: flex;
+
             justify-content: space-between;
+
             align-items: center;
-            margin-bottom: 8px;
+
+            gap: 12px;
+
+            margin-bottom: 10px;
         }
 
         .container-id {
+            display: flex;
+
+            align-items: center;
+
+            gap: 9px;
+
             font-weight: 700;
-            font-size: 1.1rem;
-            color: var(--text);
+
+            font-size: 0.88rem;
+
+            color: #ffffff;
+
+            letter-spacing: 0.3px;
+        }
+
+        .container-id-icon {
+            width: 29px;
+            height: 29px;
+
+            display: flex;
+
+            align-items: center;
+            justify-content: center;
+
+            border-radius: 8px;
+
+            background: var(--primary-soft);
+
+            font-size: 0.9rem;
         }
 
         .paca-count {
+            flex-shrink: 0;
+
             background: var(--paca-count-bg);
+
             color: var(--paca-count-text);
-            padding: 4px 8px;
+
+            padding: 6px 10px;
+
             border-radius: 20px;
-            font-size: 0.8rem;
-            font-weight: 600;
+
+            font-size: 0.62rem;
+
+            font-weight: 700;
+
+            border: 1px solid rgba(47, 140, 255, 0.12);
         }
 
         .badges-row {
             display: flex;
+
             flex-wrap: wrap;
+
             gap: 6px;
         }
 
         .badge {
-            font-size: 0.75rem;
-            padding: 2px 8px;
-            border-radius: 4px;
-            font-weight: 500;
+            display: inline-flex;
+
+            align-items: center;
+
+            font-size: 0.59rem;
+
+            padding: 4px 8px;
+
+            border-radius: 6px;
+
+            font-weight: 700;
+
+            border: 1px solid transparent;
         }
 
-        .badge-dep { background: var(--badge-dep-bg); color: var(--badge-dep-text); }
-        .badge-tipo { background: var(--badge-tipo-bg); color: var(--badge-tipo-text); }
-        .badge-prov { background: var(--badge-prov-bg); color: var(--badge-prov-text); }
+        .badge-dep {
+            background: var(--badge-dep-bg);
+
+            color: var(--badge-dep-text);
+
+            border-color:
+                rgba(47, 140, 255, 0.10);
+        }
+
+        .badge-tipo {
+            background: var(--badge-tipo-bg);
+
+            color: var(--badge-tipo-text);
+
+            border-color:
+                rgba(34, 197, 94, 0.10);
+        }
+
+        .badge-prov {
+            background: var(--badge-prov-bg);
+
+            color: var(--badge-prov-text);
+
+            border-color:
+                rgba(245, 158, 11, 0.10);
+        }
+
+        /* =========================================================
+           DETAIL TABLE
+           ========================================================= */
 
         .container-detail {
             display: none;
+
             border-top: 1px solid var(--border);
-            background: var(--detail-bg);
+
+            background:
+                linear-gradient(
+                    180deg,
+                    rgba(5, 16, 29, 0.96),
+                    rgba(6, 18, 32, 0.96)
+                );
+
             overflow-x: auto;
+
+            animation: detailOpen 0.22s ease-out;
         }
 
         .container-card.expanded .container-detail {
             display: block;
         }
 
-        /* Responsive Table Inside Detail */
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 0.85rem;
-            text-align: left;
-            min-width: 600px;
+        @keyframes detailOpen {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
         }
 
-        th, td {
-            padding: 10px 12px;
+        table {
+            width: 100%;
+
+            border-collapse: collapse;
+
+            font-size: 0.66rem;
+
+            text-align: left;
+
+            min-width: 700px;
+        }
+
+        th,
+        td {
+            padding: 11px 13px;
+
             border-bottom: 1px solid var(--border);
+
+            white-space: nowrap;
         }
 
         th {
-            background: var(--table-th);
-            color: var(--text-light);
-            font-weight: 600;
+            background:
+                rgba(16, 38, 62, 0.95);
+
+            color: #8ea4be;
+
+            font-weight: 700;
+
+            text-transform: uppercase;
+
+            font-size: 0.58rem;
+
+            letter-spacing: 0.5px;
+
+            position: sticky;
+
+            top: 0;
+
+            z-index: 2;
         }
 
-        tr:last-child td {
+        td {
+            color: #cbd5e1;
+        }
+
+        tbody tr {
+            transition:
+                background 0.15s ease;
+        }
+
+        tbody tr:hover {
+            background:
+                rgba(47, 140, 255, 0.045);
+        }
+
+        tbody tr:last-child td {
             border-bottom: none;
         }
 
+        td strong {
+            color: #ffffff;
+        }
+
+        /* =========================================================
+           EMPTY STATE
+           ========================================================= */
+
         .empty-state {
             text-align: center;
-            padding: 40px 16px;
+
+            padding: 65px 20px;
+
             color: var(--text-light);
+
+            background:
+                linear-gradient(
+                    145deg,
+                    rgba(13, 29, 49, 0.7),
+                    rgba(8, 23, 40, 0.7)
+                );
+
+            border: 1px dashed rgba(148, 163, 184, 0.18);
+
+            border-radius: 14px;
+        }
+
+        .empty-icon {
+            width: 70px;
+            height: 70px;
+
+            margin: 0 auto 18px;
+
+            display: flex;
+
+            align-items: center;
+            justify-content: center;
+
+            border-radius: 18px;
+
+            background:
+                rgba(47, 140, 255, 0.07);
+
+            border: 1px solid rgba(47, 140, 255, 0.12);
+
+            font-size: 2rem;
+
+            animation: floatingIcon 4s ease-in-out infinite;
+        }
+
+        .empty-state h3 {
+            color: #dbeafe;
+
+            font-size: 0.9rem;
+
+            margin-bottom: 8px;
         }
 
         .empty-state p {
-            margin-bottom: 12px;
+            margin-bottom: 5px;
+
+            font-size: 0.68rem;
+
+            line-height: 1.7;
+        }
+
+        .empty-state p:last-child {
+            margin-bottom: 0;
+
+            color: #556a83;
+        }
+
+        /* =========================================================
+           SCROLLBAR
+           ========================================================= */
+
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #071322;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #1b3858;
+
+            border-radius: 20px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #28527e;
+        }
+
+        /* =========================================================
+           DESKTOP
+           ========================================================= */
+
+        @media (min-width: 768px) {
+
+            .stats-container {
+                grid-template-columns:
+                    repeat(2, minmax(0, 1fr));
+            }
+
+            .filters-container {
+                grid-template-columns:
+                    1.4fr 0.8fr 0.8fr;
+            }
+
+            .filters-heading {
+                display: none;
+            }
+
+            .dashboard-heading {
+                padding-top: 30px;
+            }
+        }
+
+        @media (min-width: 1100px) {
+
+            .stats-container {
+                grid-template-columns:
+                    repeat(2, minmax(220px, 1fr));
+
+                max-width: 1500px;
+            }
+
+            .stats-container::after {
+                content: "";
+            }
+
+            .filters-container {
+                grid-template-columns:
+                    minmax(300px, 1.5fr)
+                    minmax(200px, 0.75fr)
+                    minmax(200px, 0.75fr);
+            }
+        }
+
+        /* =========================================================
+           MOBILE
+           ========================================================= */
+
+        @media (max-width: 767px) {
+
+            body {
+                padding-bottom: 20px;
+            }
+
+            header {
+                min-height: auto;
+
+                padding: 11px 13px;
+
+                gap: 10px;
+            }
+
+            .brand-icon {
+                width: 37px;
+                height: 37px;
+
+                font-size: 1.1rem;
+            }
+
+            header h1 {
+                font-size: 0.78rem;
+            }
+
+            .header-subtitle {
+                font-size: 0.52rem;
+            }
+
+            .header-actions {
+                gap: 5px;
+            }
+
+            .header-actions .btn {
+                padding: 8px 9px;
+
+                font-size: 0.58rem;
+            }
+
+            .header-actions .btn-logout {
+                padding: 8px 7px;
+            }
+
+            .dashboard-heading {
+                padding:
+                    22px 14px
+                    4px;
+            }
+
+            .dashboard-heading h2 {
+                font-size: 1rem;
+            }
+
+            .dashboard-heading p {
+                font-size: 0.6rem;
+            }
+
+            .stats-container {
+                padding: 14px;
+
+                gap: 9px;
+            }
+
+            .stat-card {
+                padding: 14px;
+
+                border-radius: 11px;
+            }
+
+            .stat-card .stat-icon {
+                width: 29px;
+                height: 29px;
+
+                font-size: 0.85rem;
+
+                margin-bottom: 8px;
+            }
+
+            .stat-card .value {
+                font-size: 1.35rem;
+            }
+
+            .stat-card .label {
+                font-size: 0.55rem;
+            }
+
+            .tabs-section {
+                padding: 0 14px;
+            }
+
+            .tabs-wrapper {
+                padding: 5px;
+
+                border-radius: 10px;
+            }
+
+            .tab {
+                padding: 8px 10px;
+
+                font-size: 0.59rem;
+            }
+
+            .filters-container {
+                margin:
+                    13px 14px 0;
+
+                padding: 13px;
+
+                border-radius: 11px;
+
+                gap: 11px;
+            }
+
+            .action-bar {
+                margin-top: 10px;
+
+                padding: 0 14px;
+            }
+
+            .action-bar .btn {
+                width: 100%;
+            }
+
+            .list-heading {
+                padding:
+                    22px 14px 8px;
+            }
+
+            .containers-list {
+                padding:
+                    8px 14px 20px;
+            }
+
+            .container-header {
+                padding: 13px;
+            }
+
+            .container-id {
+                font-size: 0.72rem;
+            }
+
+            .paca-count {
+                font-size: 0.55rem;
+
+                padding:
+                    5px 8px;
+            }
+
+            .badge {
+                font-size: 0.51rem;
+
+                padding:
+                    3px 6px;
+            }
+
+            table {
+                font-size: 0.59rem;
+
+                min-width: 650px;
+            }
+
+            th {
+                font-size: 0.52rem;
+            }
+
+            th,
+            td {
+                padding:
+                    9px 10px;
+            }
+
+            .empty-state {
+                padding:
+                    48px 15px;
+            }
+        }
+
+        @media (max-width: 430px) {
+
+            .brand-info {
+                max-width: 130px;
+            }
+
+            .header-subtitle {
+                white-space: nowrap;
+
+                overflow: hidden;
+
+                text-overflow: ellipsis;
+            }
+
+            .header-actions .btn {
+                font-size: 0;
+
+                width: 36px;
+                height: 34px;
+
+                padding: 0;
+            }
+
+            .header-actions .btn::first-letter {
+                font-size: 1rem;
+            }
+
+            .header-actions .btn-logout {
+                font-size: 0;
+            }
+
+            .header-actions .btn-logout::before {
+                content: "↪";
+
+                font-size: 1rem;
+            }
+
+            .login-card {
+                padding:
+                    32px 22px;
+            }
+        }
+
+        /* =========================================================
+           REDUCCIÓN DE MOVIMIENTO
+           ========================================================= */
+
+        @media (prefers-reduced-motion: reduce) {
+
+            *,
+            *::before,
+            *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+                scroll-behavior: auto !important;
+            }
         }
     </style>
 </head>
+
 <body>
 
-    <!-- Capa de Autenticación / Login -->
+    <!-- =========================================================
+         LOGIN
+         ========================================================= -->
+
     <div id="login-screen">
+
         <div class="login-card">
-            <h2>🔐 Control de Acceso</h2>
-            <p>Introduce la clave para ingresar al inventario</p>
-            <input type="password" id="password-input" placeholder="Contraseña de acceso" autofocus>
-            <div class="error-msg" id="login-error">Contraseña incorrecta. Inténtalo de nuevo.</div>
-            <button class="btn" style="width:100%; justify-content:center;" id="btn-login">Ingresar</button>
+
+            <div class="login-icon">
+                📦
+            </div>
+
+            <h2>CONTROL DE INVENTARIO</h2>
+
+            <p>
+                Acceso al sistema de control<br>
+                de inventario de contenedores
+            </p>
+
+            <input
+                type="password"
+                id="password-input"
+                placeholder="Contraseña de acceso"
+                autocomplete="current-password"
+                autofocus
+            >
+
+            <div
+                class="error-msg"
+                id="login-error"
+            >
+                Contraseña incorrecta. Inténtalo de nuevo.
+            </div>
+
+            <button
+                class="btn"
+                style="width:100%;"
+                id="btn-login"
+            >
+                🔐 INGRESAR
+            </button>
+
+            <div class="login-footer">
+                INVENTARIO · CONTROL OPERATIVO
+            </div>
+
         </div>
+
     </div>
 
-    <!-- Contenido Principal de la App -->
-    <div class="app-content" id="app-content">
+
+    <!-- =========================================================
+         CONTENIDO PRINCIPAL
+         ========================================================= -->
+
+    <div
+        class="app-content"
+        id="app-content"
+    >
+
+        <!-- HEADER -->
+
         <header>
-            <h1>📦 Inventario</h1>
-            <div class="header-actions">
-                <div class="file-input-wrapper">
-                    <button class="btn">Importar Excel</button>
-                    <input type="file" id="excel-file" accept=".xlsx, .xls" />
+
+            <div class="brand">
+
+                <div class="brand-icon">
+                    📦
                 </div>
-                <button class="btn btn-logout" id="btn-logout">Salir</button>
+
+                <div class="brand-info">
+
+                    <h1>
+                        INVENTARIO
+                    </h1>
+
+                    <div class="header-subtitle">
+                        Control de inventario de contenedores
+                    </div>
+
+                </div>
+
             </div>
+
+
+            <div class="header-actions">
+
+                <div class="file-input-wrapper">
+
+                    <button class="btn">
+                        📥 IMPORTAR EXCEL
+                    </button>
+
+                    <input
+                        type="file"
+                        id="excel-file"
+                        accept=".xlsx, .xls"
+                    >
+
+                </div>
+
+                <button
+                    class="btn btn-logout"
+                    id="btn-logout"
+                >
+                    SALIR
+                </button>
+
+            </div>
+
         </header>
 
+
+        <!-- =====================================================
+             DASHBOARD
+             ===================================================== -->
+
+        <section class="dashboard-heading">
+
+            <div class="eyebrow">
+                PANEL DE CONTROL
+            </div>
+
+            <h2>
+                Resumen de inventario
+            </h2>
+
+            <p>
+                Vista general de los contenedores y pacas actualmente disponibles.
+            </p>
+
+        </section>
+
+
+        <!-- ESTADÍSTICAS -->
+
         <div class="stats-container">
+
             <div class="stat-card">
-                <div class="value" id="stat-containers">0</div>
-                <div class="label">Contenedores</div>
+
+                <div class="stat-icon">
+                    🚛
+                </div>
+
+                <div
+                    class="value"
+                    id="stat-containers"
+                >
+                    0
+                </div>
+
+                <div class="label">
+                    Contenedores
+                </div>
+
             </div>
+
+
             <div class="stat-card">
-                <div class="value" id="stat-pacas">0</div>
-                <div class="label">Pacas en Vista</div>
+
+                <div class="stat-icon">
+                    📦
+                </div>
+
+                <div
+                    class="value"
+                    id="stat-pacas"
+                >
+                    0
+                </div>
+
+                <div class="label">
+                    Pacas en vista
+                </div>
+
             </div>
+
         </div>
 
-        <div class="tabs-wrapper" id="tabs-container">
-            <!-- Generado dinámicamente -->
-        </div>
+
+        <!-- =====================================================
+             DEPARTAMENTOS
+             ===================================================== -->
+
+        <section class="tabs-section">
+
+            <div class="tabs-label">
+                Clasificación por departamento
+            </div>
+
+            <div
+                class="tabs-wrapper"
+                id="tabs-container"
+            >
+                <!-- Generado dinámicamente -->
+            </div>
+
+        </section>
+
+
+        <!-- =====================================================
+             FILTROS
+             ===================================================== -->
 
         <div class="filters-container">
+
+            <div class="filters-heading">
+                <span>⚙</span>
+                Filtros de consulta
+            </div>
+
+
             <div class="search-wrapper">
-                <label for="search-contenedor">Buscar Contenedor</label>
-                <input type="text" id="search-contenedor" placeholder="Ej: CONT-12345...">
+
+                <label for="search-contenedor">
+                    Buscar contenedor
+                </label>
+
+                <input
+                    type="text"
+                    id="search-contenedor"
+                    placeholder="Ej: CONT-12345..."
+                >
+
             </div>
+
+
             <div class="select-wrapper">
-                <label for="filter-tipo">Tipo</label>
+
+                <label for="filter-tipo">
+                    Tipo
+                </label>
+
                 <select id="filter-tipo">
-                    <option value="">Todos los tipos</option>
+
+                    <option value="">
+                        Todos los tipos
+                    </option>
+
                 </select>
+
             </div>
+
+
             <div class="select-wrapper">
-                <label for="filter-proveedor">Proveedor</label>
+
+                <label for="filter-proveedor">
+                    Proveedor
+                </label>
+
                 <select id="filter-proveedor">
-                    <option value="">Todos los proveedores</option>
+
+                    <option value="">
+                        Todos los proveedores
+                    </option>
+
                 </select>
+
             </div>
+
         </div>
+
+
+        <!-- =====================================================
+             EXPORTAR
+             ===================================================== -->
 
         <div class="action-bar">
-            <button class="btn btn-secondary" id="btn-export">📥 Exportar Vista</button>
+
+            <button
+                class="btn btn-secondary"
+                id="btn-export"
+            >
+                📥 EXPORTAR VISTA
+            </button>
+
         </div>
 
-        <main class="containers-list" id="containers-list">
-            <div class="empty-state">
-                <p>No hay datos cargados en el inventario.</p>
-                <p>Por favor, importa un archivo Excel diario para comenzar.</p>
+
+        <!-- =====================================================
+             LISTA
+             ===================================================== -->
+
+        <section class="containers-section">
+
+            <div class="list-heading">
+
+                <h3>
+                    Contenedores
+                </h3>
+
+                <span>
+                    Selecciona un contenedor para ver sus pacas
+                </span>
+
             </div>
-        </main>
+
+
+            <main
+                class="containers-list"
+                id="containers-list"
+            >
+
+                <div class="empty-state">
+
+                    <div class="empty-icon">
+                        📦
+                    </div>
+
+                    <h3>
+                        Inventario sin datos
+                    </h3>
+
+                    <p>
+                        No hay datos cargados en el inventario.
+                    </p>
+
+                    <p>
+                        Importa un archivo Excel para comenzar.
+                    </p>
+
+                </div>
+
+            </main>
+
+        </section>
+
     </div>
 
+
+    <!-- =========================================================
+         JAVASCRIPT
+         ========================================================= -->
+
     <script>
+
+        // ========================================================
         // CONFIGURACIÓN DE LOGIN PRINCIPAL
-        const MASTER_PASSWORD = "Surtido"; 
+        // ========================================================
 
-        // Diccionario Global de Iconos para los Rubros/Departamentos
+        const MASTER_PASSWORD = "Surtido";
+
+
+        // ========================================================
+        // DICCIONARIO GLOBAL DE ICONOS
+        // ========================================================
+
         const MAPA_ICONOS = {
+
             "ROPA": "👕 ROPA",
+
             "CALZADO": "👟 CALZADO",
+
             "CARTERAS": "👜 CARTERAS",
+
             "BICICLETAS": "🚲 BICICLETAS",
+
             "HOGAR": "🏠 HOGAR",
+
             "JUGUETES": "🧸 JUGUETES",
+
             "MISC.": "📦 MISC."
+
         };
 
-        // Función auxiliar para retornar texto con icono mapeado
+
+        // ========================================================
+        // FUNCIÓN AUXILIAR PARA ICONOS
+        // ========================================================
+
         function obtenerTextoConIcono(rubro) {
-            if (!rubro) return "🏷️ GENERAL";
-            const limpio = String(rubro).toUpperCase().trim();
-            return MAPA_ICONOS[limpio] || `🏷️ ${limpio}`;
-        }
 
-        // Registrar Service Worker para soporte offline PWA
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('sw.js')
-                    .then(reg => console.log('Service Worker registrado con éxito:', reg.scope))
-                    .catch(err => console.error('Error al registrar Service Worker:', err));
-            });
-        }
-
-        // Estado de la Aplicación
-        let appState = {
-            rawRows: [],
-            activeTab: "Todos",
-            filters: {
-                contenedor: "",
-                tipo: "",
-                proveedor: ""
+            if (!rubro) {
+                return "🏷️ GENERAL";
             }
+
+            const limpio =
+                String(rubro)
+                    .toUpperCase()
+                    .trim();
+
+            return MAPA_ICONOS[limpio]
+                || `🏷️ ${limpio}`;
+        }
+
+
+        // ========================================================
+        // SERVICE WORKER
+        // ========================================================
+
+        if ('serviceWorker' in navigator) {
+
+            window.addEventListener('load', () => {
+
+                navigator.serviceWorker
+                    .register('sw.js')
+
+                    .then(reg => {
+
+                        console.log(
+                            'Service Worker registrado con éxito:',
+                            reg.scope
+                        );
+
+                    })
+
+                    .catch(err => {
+
+                        console.error(
+                            'Error al registrar Service Worker:',
+                            err
+                        );
+
+                    });
+
+            });
+
+        }
+
+
+        // ========================================================
+        // ESTADO DE LA APLICACIÓN
+        // ========================================================
+
+        let appState = {
+
+            rawRows: [],
+
+            activeTab: "Todos",
+
+            filters: {
+
+                contenedor: "",
+
+                tipo: "",
+
+                proveedor: ""
+
+            }
+
         };
 
-        // Mapeo flexible de encabezados uniformes
+
+        // ========================================================
+        // MAPEO FLEXIBLE DE ENCABEZADOS
+        // ========================================================
+
         const HEADER_MAP = {
-            paca: ['paca', 'paca', 'numero de paca', 'numpaca', 'num_paca'],
-            fecha: ['fecha', 'date'],
-            peso: ['peso', 'weight', 'libras', 'lbs'],
-            valorlibra: ['valorlibra', 'valor_libra', 'v_libra', 'costolb', 'precio_lb'],
-            total: ['total', 'monto', 'valor', 'total_precio'],
-            nom_dep: ['nom_dep', 'departamento', 'dep', 'nomdep', 'categoria', 'category'],
-            proveedor: ['proveedor', 'prov', 'vendor', 'supplier'],
-            tipo: ['tipo', 'type', 'clase'],
-            descrip: ['descrip', 'descripcion', 'description', 'detalle'],
-            contenedor: ['contenedor', 'container', 'cont', 'n_contenedor'],
-            plu: ['plu', 'codigo', 'sku']
+
+            paca: [
+                'paca',
+                'paca',
+                'numero de paca',
+                'numpaca',
+                'num_paca'
+            ],
+
+            fecha: [
+                'fecha',
+                'date'
+            ],
+
+            peso: [
+                'peso',
+                'weight',
+                'libras',
+                'lbs'
+            ],
+
+            valorlibra: [
+                'valorlibra',
+                'valor_libra',
+                'v_libra',
+                'costolb',
+                'precio_lb'
+            ],
+
+            total: [
+                'total',
+                'monto',
+                'valor',
+                'total_precio'
+            ],
+
+            nom_dep: [
+                'nom_dep',
+                'departamento',
+                'dep',
+                'nomdep',
+                'categoria',
+                'category'
+            ],
+
+            proveedor: [
+                'proveedor',
+                'prov',
+                'vendor',
+                'supplier'
+            ],
+
+            tipo: [
+                'tipo',
+                'type',
+                'clase'
+            ],
+
+            descrip: [
+                'descrip',
+                'descripcion',
+                'description',
+                'detalle'
+            ],
+
+            contenedor: [
+                'contenedor',
+                'container',
+                'cont',
+                'n_contenedor'
+            ],
+
+            plu: [
+                'plu',
+                'codigo',
+                'sku'
+            ]
+
         };
 
-        // Normalizar textos para comparación flexible
+
+        // ========================================================
+        // NORMALIZAR TEXTOS
+        // ========================================================
+
         function cleanString(str) {
-            if (!str) return '';
-            return String(str).toLowerCase()
+
+            if (!str) {
+                return '';
+            }
+
+            return String(str)
+                .toLowerCase()
                 .normalize("NFD")
                 .replace(/[̀-ͯ]/g, "")
                 .trim();
         }
 
-        // Detectar índices de columnas basado en los mapeos
+
+        // ========================================================
+        // DETECTAR COLUMNAS
+        // ========================================================
+
         function mapHeaders(headers) {
+
             let mapping = {};
+
             let foundContenedor = false;
 
             headers.forEach((h, index) => {
+
                 let cleaned = cleanString(h);
-                if (!cleaned) return;
+
+                if (!cleaned) {
+                    return;
+                }
 
                 for (let key in HEADER_MAP) {
-                    if (HEADER_MAP[key].includes(cleaned)) {
+
+                    if (
+                        HEADER_MAP[key]
+                            .includes(cleaned)
+                    ) {
+
                         if (key === 'contenedor') {
+
                             if (!foundContenedor) {
+
                                 mapping[key] = index;
+
                                 foundContenedor = true;
+
                             }
+
                         } else {
-                            if (mapping[key] === undefined) {
+
+                            if (
+                                mapping[key] === undefined
+                            ) {
+
                                 mapping[key] = index;
+
                             }
+
                         }
+
                     }
+
                 }
+
             });
+
             return mapping;
         }
 
-        // Control y Manejo del Login Frontend
+
+        // ========================================================
+        // AUTENTICACIÓN
+        // ========================================================
+
         function initAuth() {
-            const sessionActive = sessionStorage.getItem('inv_session_active');
-            const loginScreen = document.getElementById('login-screen');
-            const appContent = document.getElementById('app-content');
+
+            const sessionActive =
+                sessionStorage.getItem(
+                    'inv_session_active'
+                );
+
+            const loginScreen =
+                document.getElementById(
+                    'login-screen'
+                );
+
+            const appContent =
+                document.getElementById(
+                    'app-content'
+                );
+
 
             if (sessionActive === 'true') {
+
                 loginScreen.style.display = 'none';
+
                 appContent.style.display = 'block';
+
                 loadInventory();
+
             } else {
+
                 loginScreen.style.display = 'flex';
+
                 appContent.style.display = 'none';
+
             }
+
         }
+
 
         function handleLogin() {
-            const inputVal = document.getElementById('password-input').value;
-            const errorMsg = document.getElementById('login-error');
+
+            const inputVal =
+                document.getElementById(
+                    'password-input'
+                ).value;
+
+            const errorMsg =
+                document.getElementById(
+                    'login-error'
+                );
+
 
             if (inputVal === MASTER_PASSWORD) {
-                sessionStorage.setItem('inv_session_active', 'true');
+
+                sessionStorage.setItem(
+                    'inv_session_active',
+                    'true'
+                );
+
                 errorMsg.style.display = 'none';
-                document.getElementById('password-input').value = "";
+
+                document.getElementById(
+                    'password-input'
+                ).value = "";
+
                 initAuth();
+
             } else {
+
                 errorMsg.style.display = 'block';
+
             }
+
         }
+
 
         function handleLogout() {
-            sessionStorage.removeItem('inv_session_active');
+
+            sessionStorage.removeItem(
+                'inv_session_active'
+            );
+
             initAuth();
+
         }
 
-        // Cargar inventario desde LocalStorage
+
+        // ========================================================
+        // CARGAR INVENTARIO
+        // ========================================================
+
         function loadInventory() {
-            const savedData = localStorage.getItem('contenedor_inventario');
+
+            const savedData =
+                localStorage.getItem(
+                    'contenedor_inventario'
+                );
+
+
             if (savedData) {
+
                 try {
-                    appState.rawRows = JSON.parse(savedData);
+
+                    appState.rawRows =
+                        JSON.parse(savedData);
+
                     renderApp();
-                } catch(e) {
-                    console.error("Error cargando localStorage", e);
+
+                } catch (e) {
+
+                    console.error(
+                        "Error cargando localStorage",
+                        e
+                    );
+
                 }
+
             }
+
         }
 
-        // Inicializar Eventos al cargar DOM
-        document.addEventListener('DOMContentLoaded', () => {
-            initAuth();
 
-            document.getElementById('btn-login').addEventListener('click', handleLogin);
-            document.getElementById('password-input').addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') handleLogin();
-            });
-            document.getElementById('btn-logout').addEventListener('click', handleLogout);
+        // ========================================================
+        // EVENTOS
+        // ========================================================
 
-            document.getElementById('excel-file').addEventListener('change', handleFileImport);
-            document.getElementById('search-contenedor').addEventListener('input', (e) => {
-                appState.filters.contenedor = e.target.value.trim().toLowerCase();
-                renderFilteredList();
-            });
-            document.getElementById('filter-tipo').addEventListener('change', (e) => {
-                appState.filters.tipo = e.target.value;
-                renderFilteredList();
-            });
-            document.getElementById('filter-proveedor').addEventListener('change', (e) => {
-                appState.filters.proveedor = e.target.value;
-                renderFilteredList();
-            });
-            document.getElementById('btn-export').addEventListener('click', exportToExcel);
-        });
+        document.addEventListener(
+            'DOMContentLoaded',
+            () => {
 
-        // Procesar archivo Excel cargado
-        function handleFileImport(e) {
-            const file = e.target.files[0];
-            if (!file) return;
+                initAuth();
 
-            const reader = new FileReader();
-            reader.onload = function(evt) {
-                const data = new Uint8Array(evt.target.result);
-                const workbook = XLSX.read(data, { type: 'array' });
-                
-                const firstSheetName = workbook.SheetNames[0];
-                const worksheet = workbook.Sheets[firstSheetName];
-                const rawJson = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
-                
-                if (rawJson.length < 2) {
-                    alert("El archivo no contiene suficientes filas de datos.");
-                    return;
-                }
 
-                const headers = rawJson[0];
-                const colMapping = mapHeaders(headers);
+                document
+                    .getElementById('btn-login')
+                    .addEventListener(
+                        'click',
+                        handleLogin
+                    );
 
-                if (colMapping.contenedor === undefined) {
-                    alert("No se pudo detectar la columna 'contenedor'. Verifique el archivo.");
-                    return;
-                }
 
-                let processedRows = [];
-                for (let i = 1; i < rawJson.length; i++) {
-                    let row = rawJson[i];
-                    if (!row || row.length === 0) continue;
+                document
+                    .getElementById('password-input')
+                    .addEventListener(
+                        'keypress',
+                        (e) => {
 
-                    let contVal = row[colMapping.contenedor];
-                    if (contVal === undefined || contVal === null || String(contVal).trim() === "") continue;
+                            if (e.key === 'Enter') {
 
-                    let newRow = {};
-                    for (let key in HEADER_MAP) {
-                        let colIdx = colMapping[key];
-                        let val = colIdx !== undefined ? row[colIdx] : "";
-                        
-                        if (key === 'nom_dep') {
-                            val = val ? String(val).toUpperCase().trim() : "MISC.";
-                        } else if (key === 'tipo') {
-                            val = val ? String(val).toUpperCase().trim() : "GENERAL";
-                        } else if (key === 'proveedor') {
-                            val = val ? String(val).toUpperCase().trim() : "VARIOS";
+                                handleLogin();
+
+                            }
+
                         }
-                        newRow[key] = val !== undefined ? val : "";
-                    }
-                    processedRows.push(newRow);
-                }
+                    );
 
-                appState.rawRows = processedRows;
-                localStorage.setItem('contenedor_inventario', JSON.stringify(processedRows));
-                
-                appState.activeTab = "Todos";
-                appState.filters = { contenedor: "", tipo: "", proveedor: "" };
-                document.getElementById('search-contenedor').value = "";
-                
-                renderApp();
-            };
-            reader.readAsArrayBuffer(file);
-        }
 
-        // Renderizado general de pestañas, selectores y lista de contenedores
-        function renderApp() {
-            if (appState.rawRows.length === 0) {
-                document.getElementById('containers-list').innerHTML = `
-                    <div class="empty-state">
-                        <p>No hay datos cargados en el inventario.</p>
-                        <p>Por favor, importa un archivo Excel diario para comenzar.</p>
-                    </div>`;
-                updateStats(0, 0);
+                document
+                    .getElementById('btn-logout')
+                    .addEventListener(
+                        'click',
+                        handleLogout
+                    );
+
+
+                document
+                    .getElementById('excel-file')
+                    .addEventListener(
+                        'change',
+                        handleFileImport
+                    );
+
+
+                document
+                    .getElementById('search-contenedor')
+                    .addEventListener(
+                        'input',
+                        (e) => {
+
+                            appState.filters.contenedor =
+                                e.target.value
+                                    .trim()
+                                    .toLowerCase();
+
+                            renderFilteredList();
+
+                        }
+                    );
+
+
+                document
+                    .getElementById('filter-tipo')
+                    .addEventListener(
+                        'change',
+                        (e) => {
+
+                            appState.filters.tipo =
+                                e.target.value;
+
+                            renderFilteredList();
+
+                        }
+                    );
+
+
+                document
+                    .getElementById('filter-proveedor')
+                    .addEventListener(
+                        'change',
+                        (e) => {
+
+                            appState.filters.proveedor =
+                                e.target.value;
+
+                            renderFilteredList();
+
+                        }
+                    );
+
+
+                document
+                    .getElementById('btn-export')
+                    .addEventListener(
+                        'click',
+                        exportToExcel
+                    );
+
+            }
+        );
+
+
+        // ========================================================
+        // PROCESAR ARCHIVO EXCEL
+        // ========================================================
+
+        function handleFileImport(e) {
+
+            const file =
+                e.target.files[0];
+
+            if (!file) {
                 return;
             }
 
-            let deps = new Set();
-            appState.rawRows.forEach(r => { if(r.nom_dep) deps.add(r.nom_dep); });
-            let sortedDeps = Array.from(deps).sort();
-            
-            let tabsContainer = document.getElementById('tabs-container');
-            let tabsHtml = `<div class="tab ${appState.activeTab === 'Todos' ? 'active' : ''}" onclick="switchTab('Todos')">🌐 Todos</div>`;
-            sortedDeps.forEach(dep => {
-                tabsHtml += `<div class="tab ${appState.activeTab === dep ? 'active' : ''}" onclick="switchTab('${dep}')">${obtenerTextoConIcono(dep)}</div>`;
-            });
-            tabsContainer.innerHTML = tabsHtml;
+
+            const reader =
+                new FileReader();
+
+
+            reader.onload =
+                function(evt) {
+
+                    const data =
+                        new Uint8Array(
+                            evt.target.result
+                        );
+
+
+                    const workbook =
+                        XLSX.read(
+                            data,
+                            {
+                                type: 'array'
+                            }
+                        );
+
+
+                    const firstSheetName =
+                        workbook.SheetNames[0];
+
+
+                    const worksheet =
+                        workbook.Sheets[
+                            firstSheetName
+                        ];
+
+
+                    const rawJson =
+                        XLSX.utils.sheet_to_json(
+                            worksheet,
+                            {
+                                header: 1
+                            }
+                        );
+
+
+                    if (rawJson.length < 2) {
+
+                        alert(
+                            "El archivo no contiene suficientes filas de datos."
+                        );
+
+                        return;
+
+                    }
+
+
+                    const headers =
+                        rawJson[0];
+
+
+                    const colMapping =
+                        mapHeaders(headers);
+
+
+                    if (
+                        colMapping.contenedor === undefined
+                    ) {
+
+                        alert(
+                            "No se pudo detectar la columna 'contenedor'. Verifique el archivo."
+                        );
+
+                        return;
+
+                    }
+
+
+                    let processedRows = [];
+
+
+                    for (
+                        let i = 1;
+                        i < rawJson.length;
+                        i++
+                    ) {
+
+                        let row =
+                            rawJson[i];
+
+
+                        if (
+                            !row ||
+                            row.length === 0
+                        ) {
+
+                            continue;
+
+                        }
+
+
+                        let contVal =
+                            row[
+                                colMapping.contenedor
+                            ];
+
+
+                        if (
+                            contVal === undefined ||
+                            contVal === null ||
+                            String(contVal).trim() === ""
+                        ) {
+
+                            continue;
+
+                        }
+
+
+                        let newRow = {};
+
+
+                        for (
+                            let key in HEADER_MAP
+                        ) {
+
+                            let colIdx =
+                                colMapping[key];
+
+
+                            let val =
+                                colIdx !== undefined
+                                    ? row[colIdx]
+                                    : "";
+
+
+                            if (
+                                key === 'nom_dep'
+                            ) {
+
+                                val =
+                                    val
+                                        ? String(val)
+                                            .toUpperCase()
+                                            .trim()
+                                        : "MISC.";
+
+                            } else if (
+                                key === 'tipo'
+                            ) {
+
+                                val =
+                                    val
+                                        ? String(val)
+                                            .toUpperCase()
+                                            .trim()
+                                        : "GENERAL";
+
+                            } else if (
+                                key === 'proveedor'
+                            ) {
+
+                                val =
+                                    val
+                                        ? String(val)
+                                            .toUpperCase()
+                                            .trim()
+                                        : "VARIOS";
+
+                            }
+
+
+                            newRow[key] =
+                                val !== undefined
+                                    ? val
+                                    : "";
+
+                        }
+
+
+                        processedRows.push(
+                            newRow
+                        );
+
+                    }
+
+
+                    appState.rawRows =
+                        processedRows;
+
+
+                    localStorage.setItem(
+                        'contenedor_inventario',
+                        JSON.stringify(
+                            processedRows
+                        )
+                    );
+
+
+                    appState.activeTab =
+                        "Todos";
+
+
+                    appState.filters = {
+
+                        contenedor: "",
+
+                        tipo: "",
+
+                        proveedor: ""
+
+                    };
+
+
+                    document.getElementById(
+                        'search-contenedor'
+                    ).value = "";
+
+
+                    renderApp();
+
+                };
+
+
+            reader.readAsArrayBuffer(file);
+
+        }
+
+
+        // ========================================================
+        // RENDER GENERAL
+        // ========================================================
+
+        function renderApp() {
+
+            if (
+                appState.rawRows.length === 0
+            ) {
+
+                document.getElementById(
+                    'containers-list'
+                ).innerHTML = `
+
+                    <div class="empty-state">
+
+                        <div class="empty-icon">
+                            📦
+                        </div>
+
+                        <h3>
+                            Inventario sin datos
+                        </h3>
+
+                        <p>
+                            No hay datos cargados en el inventario.
+                        </p>
+
+                        <p>
+                            Importa un archivo Excel para comenzar.
+                        </p>
+
+                    </div>
+
+                `;
+
+
+                updateStats(0, 0);
+
+                return;
+
+            }
+
+
+            let deps =
+                new Set();
+
+
+            appState.rawRows.forEach(
+                r => {
+
+                    if (r.nom_dep) {
+                        deps.add(r.nom_dep);
+                    }
+
+                }
+            );
+
+
+            let sortedDeps =
+                Array.from(deps).sort();
+
+
+            let tabsContainer =
+                document.getElementById(
+                    'tabs-container'
+                );
+
+
+            let tabsHtml = `
+
+                <div
+                    class="tab ${appState.activeTab === 'Todos' ? 'active' : ''}"
+                    onclick="switchTab('Todos')"
+                >
+                    🌐 TODOS
+                </div>
+
+            `;
+
+
+            sortedDeps.forEach(
+                dep => {
+
+                    tabsHtml += `
+
+                        <div
+                            class="tab ${appState.activeTab === dep ? 'active' : ''}"
+                            onclick="switchTab('${dep}')"
+                        >
+                            ${obtenerTextoConIcono(dep)}
+                        </div>
+
+                    `;
+
+                }
+            );
+
+
+            tabsContainer.innerHTML =
+                tabsHtml;
+
 
             populateFilterOptions();
+
             renderFilteredList();
+
         }
+
+
+        // ========================================================
+        // CAMBIAR TAB
+        // ========================================================
 
         function switchTab(depName) {
-            appState.activeTab = depName;
-            appState.filters.tipo = "";
-            appState.filters.proveedor = "";
-            
-            document.querySelectorAll('.tab').forEach(t => {
-                let text = t.innerText.replace(/[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDD00-\uDFFF]/g, "").trim();
-                if (text === depName || (depName === "Todos" && text.includes("Todos"))) t.classList.add('active');
-                else t.classList.remove('active');
-            });
 
-            populateFilterOptions();
-            renderFilteredList();
-        }
+            appState.activeTab =
+                depName;
 
-        function populateFilterOptions() {
-            let filteredByTab = appState.rawRows.filter(r => appState.activeTab === "Todos" || r.nom_dep === appState.activeTab);
-            
-            let tipos = new Set();
-            let proveedores = new Set();
-            
-            filteredByTab.forEach(r => {
-                if(r.tipo) tipos.add(r.tipo);
-                if(r.proveedor) proveedores.add(r.proveedor);
-            });
 
-            let selectTipo = document.getElementById('filter-tipo');
-            let selectProv = document.getElementById('filter-proveedor');
+            appState.filters.tipo =
+                "";
 
-            let prevTipo = appState.filters.tipo;
-            let prevProv = appState.filters.proveedor;
+            appState.filters.proveedor =
+                "";
 
-            let tipoHtml = '<option value="">Todos los tipos</option>';
-            Array.from(tipos).sort().forEach(t => {
-                tipoHtml += `<option value="${t}" ${prevTipo === t ? 'selected' : ''}>${t}</option>`;
-            });
-            selectTipo.innerHTML = tipoHtml;
-            appState.filters.tipo = tipos.has(prevTipo) ? prevTipo : "";
 
-            let provHtml = '<option value="">Todos los proveedores</option>';
-            Array.from(proveedores).sort().forEach(p => {
-                provHtml += `<option value="${p}" ${prevProv === p ? 'selected' : ''}>${p}</option>`;
-            });
-            selectProv.innerHTML = provHtml;
-            appState.filters.proveedor = proveedores.has(prevProv) ? prevProv : "";
-        }
+            document
+                .querySelectorAll('.tab')
+                .forEach(t => {
 
-        function getFilteredRows() {
-            return appState.rawRows.filter(r => {
-                if (appState.activeTab !== "Todos" && r.nom_dep !== appState.activeTab) return false;
-                if (appState.filters.contenedor && !String(r.contenedor).toLowerCase().includes(appState.filters.contenedor)) return false;
-                if (appState.filters.tipo && r.tipo !== appState.filters.tipo) return false;
-                if (appState.filters.proveedor && r.proveedor !== appState.filters.proveedor) return false;
-                return true;
-            });
-        }
+                    let text =
+                        t.innerText
+                            .replace(
+                                /[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDD00-\uDFFF]/g,
+                                ""
+                            )
+                            .trim();
 
-        function renderFilteredList() {
-            let filteredRows = getFilteredRows();
-            
-            let containersMap = {};
-            filteredRows.forEach(row => {
-                let cId = row.contenedor;
-                if (!containersMap[cId]) {
-                    containersMap[cId] = {
-                        id: cId,
-                        pacas: [],
-                        deps: new Set(),
-                        tipos: new Set(),
-                        proveedores: new Set()
-                    };
-                }
-                containersMap[cId].pacas.push(row);
-                if(row.nom_dep) containersMap[cId].deps.add(row.nom_dep);
-                if(row.tipo) containersMap[cId].tipos.add(row.tipo);
-                if(row.proveedor) containersMap[cId].proveedores.add(row.proveedor);
-            });
 
-            let containersList = Object.values(containersMap).sort((a, b) => String(a.id).localeCompare(String(b.id)));
-            updateStats(containersList.length, filteredRows.length);
+                    if (
+                        text === depName ||
+                        (
+                            depName === "Todos" &&
+                            text.includes("TODOS")
+                        )
+                    ) {
 
-            let mainContainer = document.getElementById('containers-list');
-            if (containersList.length === 0) {
-                mainContainer.innerHTML = '<div class="empty-state"><p>No se encontraron resultados con los filtros actuales.</p></div>';
-                return;
-            }
+                        t.classList.add(
+                            'active'
+                        );
 
-            let html = "";
-            containersList.forEach((c, idx) => {
-                let badgeDepsHtml = Array.from(c.deps).map(d => `<span class="badge badge-dep">${obtenerTextoConIcono(d)}</span>`).join(' ');
-                let badgeTiposHtml = Array.from(c.tipos).map(t => `<span class="badge badge-tipo">${t}</span>`).join(' ');
-                let badgeProvsHtml = Array.from(c.proveedores).map(p => `<span class="badge badge-prov">${p}</span>`).join(' ');
+                    } else {
 
-                let tableRowsHtml = "";
-                c.pacas.forEach(p => {
-                    tableRowsHtml += `
-                        <tr>
-                            <td><strong>${p.paca || '-'}</strong></td>
-                            <td>${p.tipo || '-'}</td>
-                            <td>${p.proveedor || '-'}</td>
-                            <td>${p.descrip || '-'}</td>
-                            <td>${p.peso ? p.peso + ' lbs' : '-'}</td>
-                            <td>${p.fecha || '-'}</td>
-                        </tr>
-                    `;
+                        t.classList.remove(
+                            'active'
+                        );
+
+                    }
+
                 });
 
-                html += `
-                    <div class="container-card" id="card-${idx}">
-                        <div class="container-header" onclick="toggleCard('card-${idx}')">
-                            <div class="container-title-row">
-                                <span class="container-id">🚛 ${c.id}</span>
-                                <span class="paca-count">${c.pacas.length} ${c.pacas.length === 1 ? 'paca' : 'pacas'}</span>
-                            </div>
-                            <div class="badges-row">
-                                ${badgeDepsHtml}
-                                ${badgeTiposHtml}
-                                ${badgeProvsHtml}
-                            </div>
+
+            populateFilterOptions();
+
+            renderFilteredList();
+
+        }
+
+
+        // ========================================================
+        // FILTROS
+        // ========================================================
+
+        function populateFilterOptions() {
+
+            let filteredByTab =
+                appState.rawRows.filter(
+                    r =>
+                        appState.activeTab === "Todos" ||
+                        r.nom_dep === appState.activeTab
+                );
+
+
+            let tipos =
+                new Set();
+
+
+            let proveedores =
+                new Set();
+
+
+            filteredByTab.forEach(
+                r => {
+
+                    if (r.tipo) {
+                        tipos.add(r.tipo);
+                    }
+
+                    if (r.proveedor) {
+                        proveedores.add(r.proveedor);
+                    }
+
+                }
+            );
+
+
+            let selectTipo =
+                document.getElementById(
+                    'filter-tipo'
+                );
+
+
+            let selectProv =
+                document.getElementById(
+                    'filter-proveedor'
+                );
+
+
+            let prevTipo =
+                appState.filters.tipo;
+
+
+            let prevProv =
+                appState.filters.proveedor;
+
+
+            let tipoHtml =
+                '<option value="">Todos los tipos</option>';
+
+
+            Array.from(tipos)
+                .sort()
+                .forEach(t => {
+
+                    tipoHtml += `
+
+                        <option
+                            value="${t}"
+                            ${prevTipo === t ? 'selected' : ''}
+                        >
+                            ${t}
+                        </option>
+
+                    `;
+
+                });
+
+
+            selectTipo.innerHTML =
+                tipoHtml;
+
+
+            appState.filters.tipo =
+                tipos.has(prevTipo)
+                    ? prevTipo
+                    : "";
+
+
+            let provHtml =
+                '<option value="">Todos los proveedores</option>';
+
+
+            Array.from(proveedores)
+                .sort()
+                .forEach(p => {
+
+                    provHtml += `
+
+                        <option
+                            value="${p}"
+                            ${prevProv === p ? 'selected' : ''}
+                        >
+                            ${p}
+                        </option>
+
+                    `;
+
+                });
+
+
+            selectProv.innerHTML =
+                provHtml;
+
+
+            appState.filters.proveedor =
+                proveedores.has(prevProv)
+                    ? prevProv
+                    : "";
+
+        }
+
+
+        // ========================================================
+        // OBTENER FILAS FILTRADAS
+        // ========================================================
+
+        function getFilteredRows() {
+
+            return appState.rawRows.filter(
+                r => {
+
+                    if (
+                        appState.activeTab !== "Todos" &&
+                        r.nom_dep !== appState.activeTab
+                    ) {
+
+                        return false;
+
+                    }
+
+
+                    if (
+                        appState.filters.contenedor &&
+                        !String(r.contenedor)
+                            .toLowerCase()
+                            .includes(
+                                appState.filters.contenedor
+                            )
+                    ) {
+
+                        return false;
+
+                    }
+
+
+                    if (
+                        appState.filters.tipo &&
+                        r.tipo !== appState.filters.tipo
+                    ) {
+
+                        return false;
+
+                    }
+
+
+                    if (
+                        appState.filters.proveedor &&
+                        r.proveedor !==
+                        appState.filters.proveedor
+                    ) {
+
+                        return false;
+
+                    }
+
+
+                    return true;
+
+                }
+            );
+
+        }
+
+
+        // ========================================================
+        // RENDERIZAR LISTA
+        // ========================================================
+
+        function renderFilteredList() {
+
+            let filteredRows =
+                getFilteredRows();
+
+
+            let containersMap = {};
+
+
+            filteredRows.forEach(
+                row => {
+
+                    let cId =
+                        row.contenedor;
+
+
+                    if (!containersMap[cId]) {
+
+                        containersMap[cId] = {
+
+                            id: cId,
+
+                            pacas: [],
+
+                            deps: new Set(),
+
+                            tipos: new Set(),
+
+                            proveedores: new Set()
+
+                        };
+
+                    }
+
+
+                    containersMap[cId]
+                        .pacas
+                        .push(row);
+
+
+                    if (row.nom_dep) {
+
+                        containersMap[cId]
+                            .deps
+                            .add(row.nom_dep);
+
+                    }
+
+
+                    if (row.tipo) {
+
+                        containersMap[cId]
+                            .tipos
+                            .add(row.tipo);
+
+                    }
+
+
+                    if (row.proveedor) {
+
+                        containersMap[cId]
+                            .proveedores
+                            .add(row.proveedor);
+
+                    }
+
+                }
+            );
+
+
+            let containersList =
+                Object.values(
+                    containersMap
+                ).sort(
+                    (a, b) =>
+                        String(a.id)
+                            .localeCompare(
+                                String(b.id)
+                            )
+                );
+
+
+            updateStats(
+                containersList.length,
+                filteredRows.length
+            );
+
+
+            let mainContainer =
+                document.getElementById(
+                    'containers-list'
+                );
+
+
+            if (
+                containersList.length === 0
+            ) {
+
+                mainContainer.innerHTML = `
+
+                    <div class="empty-state">
+
+                        <div class="empty-icon">
+                            🔎
                         </div>
-                        <div class="container-detail">
-                            <table>
-                                <thead>
-                                    <tr>
-                                        <th>Paca</th>
-                                        <th>Tipo</th>
-                                        <th>Proveedor</th>
-                                        <th>Descripción</th>
-                                        <th>Peso</th>
-                                        <th>Fecha</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    ${tableRowsHtml}
-                                </tbody>
-                            </table>
-                        </div>
+
+                        <h3>
+                            Sin resultados
+                        </h3>
+
+                        <p>
+                            No se encontraron resultados con los filtros actuales.
+                        </p>
+
+                        <p>
+                            Prueba modificando los criterios de búsqueda.
+                        </p>
+
                     </div>
+
                 `;
-            });
 
-            mainContainer.innerHTML = html;
-        }
-
-        function toggleCard(cardId) {
-            let card = document.getElementById(cardId);
-            if (card) card.classList.toggle('expanded');
-        }
-
-        function updateStats(totalContainers, totalPacas) {
-            document.getElementById('stat-containers').textContent = totalContainers;
-            document.getElementById('stat-pacas').textContent = totalPacas;
-        }
-
-        function exportToExcel() {
-            let filteredRows = getFilteredRows();
-            if (filteredRows.length === 0) {
-                alert("No hay datos en la vista actual para exportar.");
                 return;
+
             }
 
-            let exportData = filteredRows.map(p => ({
-                "Contenedor": p.contenedor || '',
-                "N° Paca": p.paca || '',
-                "Rubro / Departamento": p.nom_dep || '',
-                "Tipo": p.tipo || '',
-                "Proveedor": p.proveedor || '',
-                "Descripción": p.descrip || '',
-                "Peso (Lbs)": p.peso || '',
-                "Fecha": p.fecha || ''
-            }));
 
-            const worksheet = XLSX.utils.json_to_sheet(exportData);
-            const workbook = XLSX.utils.book_new();
-            
-            let nombreHoja = appState.activeTab.substring(0, 31);
-            XLSX.utils.book_append_sheet(workbook, worksheet, nombreHoja);
+            let html = "";
 
-            let nombreArchivo = `Reporte_${appState.activeTab.replace(/ /g, "_")}.xlsx`;
-            XLSX.writeFile(workbook, nombreArchivo);
+
+            containersList.forEach(
+                (c, idx) => {
+
+                    let badgeDepsHtml =
+                        Array.from(c.deps)
+                            .map(
+                                d =>
+                                    `<span class="badge badge-dep">${obtenerTextoConIcono(d)}</span>`
+                            )
+                            .join(' ');
+
+
+                    let badgeTiposHtml =
+                        Array.from(c.tipos)
+                            .map(
+                                t =>
+                                    `<span class="badge badge-tipo">${t}</span>`
+                            )
+                            .join(' ');
+
+
+                    let badgeProvsHtml =
+                        Array.from(c.proveedores)
+                            .map(
+                                p =>
+                                    `<span class="badge badge-prov">${p}</span>`
+                            )
+                            .join(' ');
+
+
+                    let tableRowsHtml = "";
+
+
+                    c.pacas.forEach(
+                        p => {
+
+                            tableRowsHtml += `
+
+                                <tr>
+
+                                    <td>
+                                        <strong>
+                                            ${p.paca || '-'}
+                                        </strong>
+                                    </td>
+
+                                    <td>
+                                        ${p.tipo || '-'}
+                                    </td>
+
+                                    <td>
+                                        ${p.proveedor || '-'}
+                                    </td>
+
+                                    <td>
+                                        ${p.descrip || '-'}
+                                    </td>
+
+                                    <td>
+                                        ${
+                                            p.peso
+                                                ? p.peso + ' lbs'
+                                                : '-'
+                                        }
+                                    </td>
+
+                                    <td>
+                                        ${p.fecha || '-'}
+                                    </td>
+
+                                </tr>
+
+                            `;
+
+                        }
+                    );
+
+
+                    html += `
+
+                        <div
+                            class="container-card"
+                            id="card-${idx}"
+                        >
+
+                            <div
+                                class="container-header"
+                                onclick="toggleCard('card-${idx}')"
+                            >
+
+                                <div class="container-title-row">
+
+                                    <span class="container-id">
+
+                                        <span class="container-id-icon">
+                                            🚛
+                                        </span>
+
+                                        ${c.id}
+
+                                    </span>
+
+
+                                    <span class="paca-count">
+
+                                        ${c.pacas.length}
+                                        ${
+                                            c.pacas.length === 1
+                                                ? 'PACA'
+                                                : 'PACAS'
+                                        }
+
+                                    </span>
+
+                                </div>
+
+
+                                <div class="badges-row">
+
+                                    ${badgeDepsHtml}
+
+                                    ${badgeTiposHtml}
+
+                                    ${badgeProvsHtml}
+
+                                </div>
+
+                            </div>
+
+
+                            <div class="container-detail">
+
+                                <table>
+
+                                    <thead>
+
+                                        <tr>
+
+                                            <th>
+                                                Paca
+                                            </th>
+
+                                            <th>
+                                                Tipo
+                                            </th>
+
+                                            <th>
+                                                Proveedor
+                                            </th>
+
+                                            <th>
+                                                Descripción
+                                            </th>
+
+                                            <th>
+                                                Peso
+                                            </th>
+
+                                            <th>
+                                                Fecha
+                                            </th>
+
+                                        </tr>
+
+                                    </thead>
+
+
+                                    <tbody>
+
+                                        ${tableRowsHtml}
+
+                                    </tbody>
+
+                                </table>
+
+                            </div>
+
+                        </div>
+
+                    `;
+
+                }
+            );
+
+
+            mainContainer.innerHTML =
+                html;
+
         }
+
+
+        // ========================================================
+        // EXPANDIR / CONTRAER
+        // ========================================================
+
+        function toggleCard(cardId) {
+
+            let card =
+                document.getElementById(
+                    cardId
+                );
+
+
+            if (card) {
+
+                card.classList.toggle(
+                    'expanded'
+                );
+
+            }
+
+        }
+
+
+        // ========================================================
+        // ACTUALIZAR ESTADÍSTICAS
+        // ========================================================
+
+        function updateStats(
+            totalContainers,
+            totalPacas
+        ) {
+
+            document.getElementById(
+                'stat-containers'
+            ).textContent =
+                totalContainers;
+
+
+            document.getElementById(
+                'stat-pacas'
+            ).textContent =
+                totalPacas;
+
+        }
+
+
+        // ========================================================
+        // EXPORTAR A EXCEL
+        // ========================================================
+
+        function exportToExcel() {
+
+            let filteredRows =
+                getFilteredRows();
+
+
+            if (
+                filteredRows.length === 0
+            ) {
+
+                alert(
+                    "No hay datos en la vista actual para exportar."
+                );
+
+                return;
+
+            }
+
+
+            let exportData =
+                filteredRows.map(
+                    p => ({
+
+                        "Contenedor":
+                            p.contenedor || '',
+
+                        "N° Paca":
+                            p.paca || '',
+
+                        "Rubro / Departamento":
+                            p.nom_dep || '',
+
+                        "Tipo":
+                            p.tipo || '',
+
+                        "Proveedor":
+                            p.proveedor || '',
+
+                        "Descripción":
+                            p.descrip || '',
+
+                        "Peso (Lbs)":
+                            p.peso || '',
+
+                        "Fecha":
+                            p.fecha || ''
+
+                    })
+                );
+
+
+            const worksheet =
+                XLSX.utils.json_to_sheet(
+                    exportData
+                );
+
+
+            const workbook =
+                XLSX.utils.book_new();
+
+
+            let nombreHoja =
+                appState.activeTab
+                    .substring(0, 31);
+
+
+            XLSX.utils.book_append_sheet(
+                workbook,
+                worksheet,
+                nombreHoja
+            );
+
+
+            let nombreArchivo =
+                `Reporte_${
+                    appState.activeTab
+                        .replace(/ /g, "_")
+                }.xlsx`;
+
+
+            XLSX.writeFile(
+                workbook,
+                nombreArchivo
+            );
+
+        }
+
     </script>
+
 </body>
 </html>
