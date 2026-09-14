@@ -1,53 +1,144 @@
-const CACHE_NAME = 'contenedor-inventario-v1';
-const ASSETS = [
-  'index.html',
-  'manifest.json',
-  'icon-192.png',
-  'icon-512.png',
-  'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js'
+const CACHE_NAME = 'contenedor-inventario-v2';
+
+const APP_ASSETS = [
+    './',
+    './index.html',
+    './manifest.json',
+    './icon-192.png',
+    './icon-512.png'
 ];
 
-// Instalar el Service Worker y almacenar recursos clave en caché
-self.addEventListener('install', (e) => {
-  e.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(ASSETS);
-    }).then(() => self.skipWaiting())
-  );
+// ============================================================
+// INSTALACIÓN
+// ============================================================
+
+self.addEventListener('install', event => {
+    event.waitUntil(
+        caches.open(CACHE_NAME)
+            .then(cache => cache.addAll(APP_ASSETS))
+            .then(() => self.skipWaiting())
+    );
 });
 
-// Activar y limpiar cachés antiguas
-self.addEventListener('activate', (e) => {
-  e.waitUntil(
-    caches.keys().then((keys) => {
-      return Promise.all(
-        keys.map((key) => {
-          if (key !== CACHE_NAME) {
-            return caches.delete(key);
-          }
-        })
-      );
-    }).then(() => self.clients.claim())
-  );
+// ============================================================
+// ACTIVACIÓN
+// ============================================================
+
+self.addEventListener('activate', event => {
+    event.waitUntil(
+        caches.keys()
+            .then(cacheNames => {
+                return Promise.all(
+                    cacheNames.map(cacheName => {
+                        if (cacheName !== CACHE_NAME) {
+                            return caches.delete(cacheName);
+                        }
+
+                        return Promise.resolve();
+                    })
+                );
+            })
+            .then(() => self.clients.claim())
+    );
 });
 
-// Estrategia Cache First, fallbacks a Red si no está cacheado
-self.addEventListener('fetch', (e) => {
-  e.respondWith(
-    caches.match(e.request).then((cachedResponse) => {
-      if (cachedResponse) {
-        return cachedResponse;
-      }
-      return fetch(e.request).then((networkResponse) => {
-        // Guardar dinámicamente si corresponde a recursos válidos del CDN o la app
-        if (e.request.url.startsWith('http') || e.request.url.includes('cdnjs')) {
-          return caches.open(CACHE_NAME).then((cache) => {
-            cache.put(e.request, networkResponse.clone());
-            return networkResponse;
-          });
-        }
-        return networkResponse;
-      });
-    })
-  );
+// ============================================================
+// FETCH
+// ============================================================
+
+self.addEventListener('fetch', event => {
+
+    const request = event.request;
+
+    // Solo manejar solicitudes GET
+    if (request.method !== 'GET') {
+        return;
+    }
+
+    const url = new URL(request.url);
+
+    // --------------------------------------------------------
+    // INDEX.HTML
+    // SIEMPRE intentar obtener la versión actual de RED
+    // --------------------------------------------------------
+
+    if (
+        url.pathname.endsWith('/index.html') ||
+        url.pathname.endsWith('/')
+    ) {
+        event.respondWith(
+            fetch(request, {
+                cache: 'no-cache'
+            })
+            .then(networkResponse => {
+
+                if (
+                    networkResponse &&
+                    networkResponse.ok
+                ) {
+                    const responseClone =
+                        networkResponse.clone();
+
+                    caches.open(CACHE_NAME)
+                        .then(cache => {
+                            cache.put(
+                                request,
+                                responseClone
+                            );
+                        });
+                }
+
+                return networkResponse;
+            })
+            .catch(() => {
+                return caches.match(request);
+            })
+        );
+
+        return;
+    }
+
+    // --------------------------------------------------------
+    // OTROS RECURSOS
+    // Cache First + Red como respaldo
+    // --------------------------------------------------------
+
+    event.respondWith(
+        caches.match(request)
+            .then(cachedResponse => {
+
+                if (cachedResponse) {
+                    return cachedResponse;
+                }
+
+                return fetch(request)
+                    .then(networkResponse => {
+
+                        if (
+                            networkResponse &&
+                            networkResponse.ok
+                        ) {
+
+                            const responseClone =
+                                networkResponse.clone();
+
+                            caches.open(CACHE_NAME)
+                                .then(cache => {
+
+                                    cache.put(
+                                        request,
+                                        responseClone
+                                    );
+
+                                });
+
+                        }
+
+                        return networkResponse;
+
+                    });
+
+            })
+    );
+
 });
