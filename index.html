@@ -2572,7 +2572,7 @@
             window.addEventListener('load', () => {
 
                 navigator.serviceWorker
-                    .register('sw.js')
+                    .register('./sw.js?v=2')
 
                     .then(reg => {
 
@@ -2730,30 +2730,42 @@
 
         function normalizeDepartment(value) {
 
-            let normalized =
-                cleanString(value)
-                    .toUpperCase()
-                    .replace(/\s+/g, " ")
-                    .trim();
+            if (value === undefined || value === null) {
+                return "";
+            }
+
+            let normalized = String(value)
+                .normalize("NFD")
+                .replace(/[\u0300-\u036f]/g, "")
+                .replace(/\s+/g, " ")
+                .trim()
+                .toUpperCase();
 
             if (!normalized) {
                 return "MISC.";
             }
 
-            /*
-             * Normaliza variantes habituales de MISC.
-             */
+            // Valores equivalentes que deben pertenecer a la misma pestaña.
             if (
                 normalized === "MISC" ||
                 normalized === "MISC." ||
                 normalized === "MISCELANEO" ||
                 normalized === "MISCELANEO." ||
-                normalized === "MISCELANEOUS"
+                normalized === "MISCELANEOUS" ||
+                normalized === "MISC." 
             ) {
                 return "MISC.";
             }
 
+            if (normalized === "TODOS") {
+                return "TODOS";
+            }
+
             return normalized;
+        }
+
+        function sameDepartment(a, b) {
+            return normalizeDepartment(a) === normalizeDepartment(b);
         }
 
 
@@ -3067,6 +3079,7 @@
             () => {
 
                 initAuth();
+                initTabEvents();
 
 
                 document
@@ -3468,134 +3481,86 @@
 
             if (appState.rawRows.length === 0) {
 
-                document.getElementById(
-                    "containers-list"
-                ).innerHTML = `
+                document.getElementById("containers-list").innerHTML = `
                     <div class="empty-state">
-                        <div class="empty-icon">
-                            📦
-                        </div>
-
-                        <h3>
-                            Inventario sin datos
-                        </h3>
-
-                        <p>
-                            No hay datos cargados en el inventario.
-                        </p>
-
-                        <p>
-                            Importa un archivo Excel para comenzar.
-                        </p>
+                        <div class="empty-icon">📦</div>
+                        <h3>Inventario sin datos</h3>
+                        <p>No hay datos cargados en el inventario.</p>
+                        <p>Importa un archivo Excel para comenzar.</p>
                     </div>
                 `;
 
-                document.getElementById(
-                    "tabs-container"
-                ).innerHTML = "";
-
+                document.getElementById("tabs-container").innerHTML = "";
                 updateStats(0, 0);
                 return;
             }
 
-            /*
-             * Normalizamos nuevamente los datos antes de
-             * construir las pestañas. Esto también corrige
-             * información antigua guardada en localStorage.
-             */
-            appState.rawRows =
-                appState.rawRows.map(row => ({
-                    ...row,
-                    nom_dep:
-                        normalizeDepartment(
-                            row.nom_dep
-                        )
-                }));
+            // Normalizar departamentos existentes, incluidos los que vienen
+            // de localStorage de versiones anteriores.
+            appState.rawRows = appState.rawRows.map(row => ({
+                ...row,
+                nom_dep: normalizeDepartment(row.nom_dep)
+            }));
 
-            const deps =
-                new Set();
+            // Persistimos la normalización para que no vuelva a aparecer
+            // una diferencia entre los datos viejos y los nuevos.
+            try {
+                localStorage.setItem(
+                    "contenedor_inventario",
+                    JSON.stringify(appState.rawRows)
+                );
+            } catch (error) {
+                console.warn("No se pudo actualizar localStorage:", error);
+            }
+
+            const deps = new Set();
 
             appState.rawRows.forEach(row => {
-
-                const dep =
-                    normalizeDepartment(
-                        row.nom_dep
-                    );
-
-                if (dep) {
-                    deps.add(dep);
-                }
-
+                const dep = normalizeDepartment(row.nom_dep);
+                if (dep) deps.add(dep);
             });
 
-            const sortedDeps =
-                Array.from(deps)
-                    .sort((a, b) =>
-                        a.localeCompare(
-                            b,
-                            "es",
-                            {
-                                sensitivity: "base"
-                            }
-                        )
-                    );
+            const sortedDeps = Array.from(deps).sort((a, b) =>
+                a.localeCompare(b, "es", { sensitivity: "base" })
+            );
 
-            /*
-             * Si una pestaña anteriormente seleccionada
-             * ya no existe después de normalizar los datos,
-             * regresamos a Todos.
-             */
+            const activeNormalized = normalizeDepartment(appState.activeTab);
+
             if (
-                appState.activeTab !== "Todos" &&
-                !deps.has(
-                    normalizeDepartment(
-                        appState.activeTab
-                    )
-                )
+                activeNormalized !== "TODOS" &&
+                !deps.has(activeNormalized)
             ) {
                 appState.activeTab = "Todos";
             }
 
-            const tabsContainer =
-                document.getElementById(
-                    "tabs-container"
-                );
+            const tabsContainer = document.getElementById("tabs-container");
 
             let tabsHtml = `
-                <div
-                    class="tab ${
-                        appState.activeTab === "Todos"
-                            ? "active"
-                            : ""
-                    }"
-                    data-department="Todos"
-                    onclick="switchTab('Todos')"
+                <button
+                    type="button"
+                    class="tab ${normalizeDepartment(appState.activeTab) === "TODOS" ? "active" : ""}"
+                    data-department="TODOS"
                 >
                     🌐 TODOS
-                </div>
+                </button>
             `;
 
             sortedDeps.forEach(dep => {
-
                 const active =
-                    appState.activeTab === dep;
+                    normalizeDepartment(appState.activeTab) === dep;
 
                 tabsHtml += `
-                    <div
-                        class="tab ${
-                            active ? "active" : ""
-                        }"
+                    <button
+                        type="button"
+                        class="tab ${active ? "active" : ""}"
                         data-department="${escapeHtml(dep)}"
-                        onclick="switchTab(${JSON.stringify(dep)})"
                     >
                         ${obtenerTextoConIcono(dep)}
-                    </div>
+                    </button>
                 `;
-
             });
 
-            tabsContainer.innerHTML =
-                tabsHtml;
+            tabsContainer.innerHTML = tabsHtml;
 
             populateFilterOptions();
             renderFilteredList();
@@ -3608,36 +3573,60 @@
 
         function switchTab(depName) {
 
-            const normalizedTab =
-                normalizeDepartment(depName);
+            const normalized = normalizeDepartment(depName);
 
             appState.activeTab =
-                normalizedTab === "TODOS"
+                normalized === "TODOS"
                     ? "Todos"
-                    : normalizedTab;
+                    : normalized;
 
+            // Al cambiar de departamento, los filtros dependientes se reinician.
             appState.filters.tipo = "";
             appState.filters.proveedor = "";
 
-            document
-                .querySelectorAll(".tab")
-                .forEach(tab => {
+            document.querySelectorAll(".tab").forEach(tab => {
 
-                    const tabDepartment =
-                        tab.dataset.department || "";
+                const tabDepartment =
+                    normalizeDepartment(tab.dataset.department || "");
 
-                    const isActive =
-                        tabDepartment === appState.activeTab;
-
-                    tab.classList.toggle(
-                        "active",
-                        isActive
-                    );
-
-                });
+                tab.classList.toggle(
+                    "active",
+                    tabDepartment === normalizeDepartment(appState.activeTab)
+                );
+            });
 
             populateFilterOptions();
             renderFilteredList();
+        }
+
+        // Delegación de eventos: las pestañas se regeneran dinámicamente,
+        // por eso el listener vive en el contenedor y no en cada botón.
+        function initTabEvents() {
+
+            const tabsContainer =
+                document.getElementById("tabs-container");
+
+            if (!tabsContainer || tabsContainer.dataset.eventsReady === "true") {
+                return;
+            }
+
+            tabsContainer.dataset.eventsReady = "true";
+
+            tabsContainer.addEventListener("click", event => {
+
+                const tab = event.target.closest(".tab");
+
+                if (!tab || !tabsContainer.contains(tab)) {
+                    return;
+                }
+
+                event.preventDefault();
+                event.stopPropagation();
+
+                switchTab(
+                    tab.dataset.department || "Todos"
+                );
+            });
         }
 
 
@@ -3647,128 +3636,70 @@
 
         function populateFilterOptions() {
 
-            const activeTab =
-                appState.activeTab === "Todos"
-                    ? "Todos"
-                    : normalizeDepartment(
-                        appState.activeTab
-                    );
+            const activeDepartment =
+                normalizeDepartment(appState.activeTab);
 
-            const filteredByTab =
-                appState.rawRows.filter(row => {
+            const filteredByTab = appState.rawRows.filter(row => {
 
-                    if (activeTab === "Todos") {
-                        return true;
-                    }
+                if (activeDepartment === "TODOS") {
+                    return true;
+                }
 
-                    return normalizeDepartment(
-                        row.nom_dep
-                    ) === activeTab;
-
-                });
+                return sameDepartment(
+                    row.nom_dep,
+                    activeDepartment
+                );
+            });
 
             const tipos = new Set();
             const proveedores = new Set();
 
             filteredByTab.forEach(row => {
 
-                if (row.tipo) {
-                    tipos.add(
-                        String(row.tipo).trim()
-                    );
+                if (row.tipo !== undefined && row.tipo !== null && String(row.tipo).trim()) {
+                    tipos.add(String(row.tipo).trim());
                 }
 
-                if (row.proveedor) {
-                    proveedores.add(
-                        String(row.proveedor).trim()
-                    );
+                if (row.proveedor !== undefined && row.proveedor !== null && String(row.proveedor).trim()) {
+                    proveedores.add(String(row.proveedor).trim());
                 }
-
             });
 
-            const selectTipo =
-                document.getElementById(
-                    "filter-tipo"
-                );
+            const selectTipo = document.getElementById("filter-tipo");
+            const selectProv = document.getElementById("filter-proveedor");
 
-            const selectProv =
-                document.getElementById(
-                    "filter-proveedor"
-                );
+            const prevTipo = appState.filters.tipo;
+            const prevProv = appState.filters.proveedor;
 
-            const prevTipo =
-                appState.filters.tipo;
-
-            const prevProv =
-                appState.filters.proveedor;
-
-            let tipoHtml =
-                '<option value="">Todos los tipos</option>';
+            let tipoHtml = '<option value="">Todos los tipos</option>';
 
             Array.from(tipos)
-                .sort((a, b) =>
-                    a.localeCompare(
-                        b,
-                        "es",
-                        {
-                            sensitivity: "base"
-                        }
-                    )
-                )
+                .sort((a, b) => a.localeCompare(b, "es", { sensitivity: "base" }))
                 .forEach(tipo => {
-
                     tipoHtml += `
-                        <option
-                            value="${escapeHtml(tipo)}"
-                            ${prevTipo === tipo ? "selected" : ""}
-                        >
+                        <option value="${escapeHtml(tipo)}" ${prevTipo === tipo ? "selected" : ""}>
                             ${escapeHtml(tipo)}
                         </option>
                     `;
-
                 });
 
-            selectTipo.innerHTML =
-                tipoHtml;
+            selectTipo.innerHTML = tipoHtml;
+            appState.filters.tipo = tipos.has(prevTipo) ? prevTipo : "";
 
-            appState.filters.tipo =
-                tipos.has(prevTipo)
-                    ? prevTipo
-                    : "";
-
-            let provHtml =
-                '<option value="">Todos los proveedores</option>';
+            let provHtml = '<option value="">Todos los proveedores</option>';
 
             Array.from(proveedores)
-                .sort((a, b) =>
-                    a.localeCompare(
-                        b,
-                        "es",
-                        {
-                            sensitivity: "base"
-                        }
-                    )
-                )
+                .sort((a, b) => a.localeCompare(b, "es", { sensitivity: "base" }))
                 .forEach(proveedor => {
-
                     provHtml += `
-                        <option
-                            value="${escapeHtml(proveedor)}"
-                            ${prevProv === proveedor ? "selected" : ""}
-                        >
+                        <option value="${escapeHtml(proveedor)}" ${prevProv === proveedor ? "selected" : ""}>
                             ${escapeHtml(proveedor)}
                         </option>
                     `;
-
                 });
 
-            selectProv.innerHTML =
-                provHtml;
-
-            appState.filters.proveedor =
-                proveedores.has(prevProv)
-                    ? prevProv
-                    : "";
+            selectProv.innerHTML = provHtml;
+            appState.filters.proveedor = proveedores.has(prevProv) ? prevProv : "";
         }
 
 
@@ -3778,83 +3709,69 @@
 
         function getFilteredRows() {
 
-            const activeTab =
-                appState.activeTab === "Todos"
-                    ? "Todos"
-                    : normalizeDepartment(
-                        appState.activeTab
-                    );
+            const activeDepartment =
+                normalizeDepartment(appState.activeTab);
 
             const searchContenedor =
-                String(
-                    appState.filters.contenedor || ""
-                )
-                .trim()
-                .toLowerCase();
+                String(appState.filters.contenedor || "")
+                    .trim()
+                    .toLowerCase();
 
             const selectedTipo =
-                String(
-                    appState.filters.tipo || ""
-                )
-                .trim();
+                String(appState.filters.tipo || "").trim();
 
             const selectedProveedor =
-                String(
-                    appState.filters.proveedor || ""
-                )
-                .trim();
+                String(appState.filters.proveedor || "").trim();
 
             return appState.rawRows.filter(row => {
 
-                if (activeTab !== "Todos") {
+                // ====================================================
+                // DEPARTAMENTO
+                // ====================================================
 
-                    const rowDepartment =
-                        normalizeDepartment(
-                            row.nom_dep
-                        );
-
-                    if (
-                        rowDepartment !==
-                        activeTab
-                    ) {
-                        return false;
-                    }
-
+                if (
+                    activeDepartment !== "TODOS" &&
+                    !sameDepartment(row.nom_dep, activeDepartment)
+                ) {
+                    return false;
                 }
+
+                // ====================================================
+                // CONTENEDOR
+                // ====================================================
 
                 if (
                     searchContenedor &&
-                    !String(
-                        row.contenedor ?? ""
-                    )
-                    .toLowerCase()
-                    .includes(
-                        searchContenedor
-                    )
+                    !String(row.contenedor ?? "")
+                        .toLowerCase()
+                        .includes(searchContenedor)
                 ) {
                     return false;
                 }
+
+                // ====================================================
+                // TIPO
+                // ====================================================
 
                 if (
                     selectedTipo &&
-                    String(
-                        row.tipo ?? ""
-                    ).trim() !== selectedTipo
+                    String(row.tipo ?? "").trim() !== selectedTipo
                 ) {
                     return false;
                 }
 
+                // ====================================================
+                // PROVEEDOR
+                // ====================================================
+
                 if (
                     selectedProveedor &&
-                    String(
-                        row.proveedor ?? ""
-                    ).trim() !== selectedProveedor
+                    String(row.proveedor ?? "").trim() !== selectedProveedor
                 ) {
                     return false;
                 }
 
                 return true;
-
             });
         }
 
