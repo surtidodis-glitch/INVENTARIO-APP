@@ -2725,6 +2725,39 @@
 
 
         // ========================================================
+        // NORMALIZAR DEPARTAMENTO
+        // ========================================================
+
+        function normalizeDepartment(value) {
+
+            let normalized =
+                cleanString(value)
+                    .toUpperCase()
+                    .replace(/\s+/g, " ")
+                    .trim();
+
+            if (!normalized) {
+                return "MISC.";
+            }
+
+            /*
+             * Normaliza variantes habituales de MISC.
+             */
+            if (
+                normalized === "MISC" ||
+                normalized === "MISC." ||
+                normalized === "MISCELANEO" ||
+                normalized === "MISCELANEO." ||
+                normalized === "MISCELANEOUS"
+            ) {
+                return "MISC.";
+            }
+
+            return normalized;
+        }
+
+
+        // ========================================================
         // ESCAPAR HTML
         // ========================================================
 
@@ -3001,7 +3034,13 @@
                     appState.rawRows =
                         JSON.parse(
                             savedData
-                        );
+                        ).map(row => ({
+                            ...row,
+                            nom_dep:
+                                normalizeDepartment(
+                                    row.nom_dep
+                                )
+                        }));
 
                     renderApp();
 
@@ -3307,13 +3346,9 @@
                                 ) {
 
                                     val =
-                                        val
-                                            ? String(
-                                                val
-                                            )
-                                                .toUpperCase()
-                                                .trim()
-                                            : "MISC.";
+                                        normalizeDepartment(
+                                            val
+                                        );
 
                                 } else if (
                                     key ===
@@ -3431,16 +3466,12 @@
 
         function renderApp() {
 
-            if (
-                appState.rawRows.length === 0
-            ) {
+            if (appState.rawRows.length === 0) {
 
                 document.getElementById(
-                    'containers-list'
+                    "containers-list"
                 ).innerHTML = `
-
                     <div class="empty-state">
-
                         <div class="empty-icon">
                             📦
                         </div>
@@ -3456,97 +3487,118 @@
                         <p>
                             Importa un archivo Excel para comenzar.
                         </p>
-
                     </div>
-
                 `;
 
+                document.getElementById(
+                    "tabs-container"
+                ).innerHTML = "";
 
                 updateStats(0, 0);
-
                 return;
-
             }
 
+            /*
+             * Normalizamos nuevamente los datos antes de
+             * construir las pestañas. Esto también corrige
+             * información antigua guardada en localStorage.
+             */
+            appState.rawRows =
+                appState.rawRows.map(row => ({
+                    ...row,
+                    nom_dep:
+                        normalizeDepartment(
+                            row.nom_dep
+                        )
+                }));
 
-            let deps =
+            const deps =
                 new Set();
 
+            appState.rawRows.forEach(row => {
 
-            appState.rawRows.forEach(
-                r => {
+                const dep =
+                    normalizeDepartment(
+                        row.nom_dep
+                    );
 
-                    if (r.nom_dep) {
-                        deps.add(
-                            r.nom_dep
-                        );
-                    }
-
+                if (dep) {
+                    deps.add(dep);
                 }
-            );
 
+            });
 
-            let sortedDeps =
+            const sortedDeps =
                 Array.from(deps)
-                    .sort();
+                    .sort((a, b) =>
+                        a.localeCompare(
+                            b,
+                            "es",
+                            {
+                                sensitivity: "base"
+                            }
+                        )
+                    );
 
+            /*
+             * Si una pestaña anteriormente seleccionada
+             * ya no existe después de normalizar los datos,
+             * regresamos a Todos.
+             */
+            if (
+                appState.activeTab !== "Todos" &&
+                !deps.has(
+                    normalizeDepartment(
+                        appState.activeTab
+                    )
+                )
+            ) {
+                appState.activeTab = "Todos";
+            }
 
-            let tabsContainer =
+            const tabsContainer =
                 document.getElementById(
-                    'tabs-container'
+                    "tabs-container"
                 );
 
-
             let tabsHtml = `
-
                 <div
                     class="tab ${
-                        appState.activeTab ===
-                        'Todos'
-                            ? 'active'
-                            : ''
+                        appState.activeTab === "Todos"
+                            ? "active"
+                            : ""
                     }"
+                    data-department="Todos"
                     onclick="switchTab('Todos')"
                 >
                     🌐 TODOS
                 </div>
-
             `;
 
+            sortedDeps.forEach(dep => {
 
-            sortedDeps.forEach(
-                dep => {
+                const active =
+                    appState.activeTab === dep;
 
-                    tabsHtml += `
+                tabsHtml += `
+                    <div
+                        class="tab ${
+                            active ? "active" : ""
+                        }"
+                        data-department="${escapeHtml(dep)}"
+                        onclick="switchTab(${JSON.stringify(dep)})"
+                    >
+                        ${obtenerTextoConIcono(dep)}
+                    </div>
+                `;
 
-                        <div
-                            class="tab ${
-                                appState.activeTab ===
-                                dep
-                                    ? 'active'
-                                    : ''
-                            }"
-                            onclick="switchTab(${JSON.stringify(dep)})"
-                        >
-                            ${obtenerTextoConIcono(
-                                dep
-                            )}
-                        </div>
-
-                    `;
-
-                }
-            );
-
+            });
 
             tabsContainer.innerHTML =
                 tabsHtml;
 
-
             populateFilterOptions();
-
             renderFilteredList();
-
         }
 
 
@@ -3556,60 +3608,36 @@
 
         function switchTab(depName) {
 
+            const normalizedTab =
+                normalizeDepartment(depName);
+
             appState.activeTab =
-                depName;
+                normalizedTab === "TODOS"
+                    ? "Todos"
+                    : normalizedTab;
 
-
-            appState.filters.tipo =
-                "";
-
-            appState.filters.proveedor =
-                "";
-
+            appState.filters.tipo = "";
+            appState.filters.proveedor = "";
 
             document
-                .querySelectorAll('.tab')
-                .forEach(t => {
+                .querySelectorAll(".tab")
+                .forEach(tab => {
 
-                    let text =
-                        t.innerText
-                            .replace(
-                                /[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDD00-\uDFFF]/g,
-                                ""
-                            )
-                            .trim();
+                    const tabDepartment =
+                        tab.dataset.department || "";
 
+                    const isActive =
+                        tabDepartment === appState.activeTab;
 
-                    if (
-                        text === depName ||
-                        (
-                            depName ===
-                                "Todos" &&
-                            text.includes(
-                                "TODOS"
-                            )
-                        )
-                    ) {
-
-                        t.classList.add(
-                            'active'
-                        );
-
-                    } else {
-
-                        t.classList.remove(
-                            'active'
-                        );
-
-                    }
+                    tab.classList.toggle(
+                        "active",
+                        isActive
+                    );
 
                 });
 
-
             populateFilterOptions();
-
             renderFilteredList();
-
         }
 
 
@@ -3619,140 +3647,128 @@
 
         function populateFilterOptions() {
 
-            let filteredByTab =
-                appState.rawRows.filter(
-                    r =>
-                        appState.activeTab ===
-                            "Todos" ||
-                        r.nom_dep ===
-                            appState.activeTab
-                );
+            const activeTab =
+                appState.activeTab === "Todos"
+                    ? "Todos"
+                    : normalizeDepartment(
+                        appState.activeTab
+                    );
 
+            const filteredByTab =
+                appState.rawRows.filter(row => {
 
-            let tipos =
-                new Set();
-
-
-            let proveedores =
-                new Set();
-
-
-            filteredByTab.forEach(
-                r => {
-
-                    if (r.tipo) {
-                        tipos.add(
-                            r.tipo
-                        );
+                    if (activeTab === "Todos") {
+                        return true;
                     }
 
-                    if (r.proveedor) {
-                        proveedores.add(
-                            r.proveedor
-                        );
-                    }
+                    return normalizeDepartment(
+                        row.nom_dep
+                    ) === activeTab;
 
+                });
+
+            const tipos = new Set();
+            const proveedores = new Set();
+
+            filteredByTab.forEach(row => {
+
+                if (row.tipo) {
+                    tipos.add(
+                        String(row.tipo).trim()
+                    );
                 }
-            );
 
+                if (row.proveedor) {
+                    proveedores.add(
+                        String(row.proveedor).trim()
+                    );
+                }
 
-            let selectTipo =
+            });
+
+            const selectTipo =
                 document.getElementById(
-                    'filter-tipo'
+                    "filter-tipo"
                 );
 
-
-            let selectProv =
+            const selectProv =
                 document.getElementById(
-                    'filter-proveedor'
+                    "filter-proveedor"
                 );
 
-
-            let prevTipo =
+            const prevTipo =
                 appState.filters.tipo;
 
-
-            let prevProv =
+            const prevProv =
                 appState.filters.proveedor;
-
 
             let tipoHtml =
                 '<option value="">Todos los tipos</option>';
 
-
             Array.from(tipos)
-                .sort()
-                .forEach(
-                    t => {
+                .sort((a, b) =>
+                    a.localeCompare(
+                        b,
+                        "es",
+                        {
+                            sensitivity: "base"
+                        }
+                    )
+                )
+                .forEach(tipo => {
 
-                        tipoHtml += `
+                    tipoHtml += `
+                        <option
+                            value="${escapeHtml(tipo)}"
+                            ${prevTipo === tipo ? "selected" : ""}
+                        >
+                            ${escapeHtml(tipo)}
+                        </option>
+                    `;
 
-                            <option
-                                value="${escapeHtml(t)}"
-                                ${
-                                    prevTipo ===
-                                    t
-                                        ? 'selected'
-                                        : ''
-                                }
-                            >
-                                ${escapeHtml(t)}
-                            </option>
-
-                        `;
-
-                    }
-                );
-
+                });
 
             selectTipo.innerHTML =
                 tipoHtml;
-
 
             appState.filters.tipo =
                 tipos.has(prevTipo)
                     ? prevTipo
                     : "";
 
-
             let provHtml =
                 '<option value="">Todos los proveedores</option>';
 
-
             Array.from(proveedores)
-                .sort()
-                .forEach(
-                    p => {
+                .sort((a, b) =>
+                    a.localeCompare(
+                        b,
+                        "es",
+                        {
+                            sensitivity: "base"
+                        }
+                    )
+                )
+                .forEach(proveedor => {
 
-                        provHtml += `
+                    provHtml += `
+                        <option
+                            value="${escapeHtml(proveedor)}"
+                            ${prevProv === proveedor ? "selected" : ""}
+                        >
+                            ${escapeHtml(proveedor)}
+                        </option>
+                    `;
 
-                            <option
-                                value="${escapeHtml(p)}"
-                                ${
-                                    prevProv ===
-                                    p
-                                        ? 'selected'
-                                        : ''
-                                }
-                            >
-                                ${escapeHtml(p)}
-                            </option>
-
-                        `;
-
-                    }
-                );
-
+                });
 
             selectProv.innerHTML =
                 provHtml;
-
 
             appState.filters.proveedor =
                 proveedores.has(prevProv)
                     ? prevProv
                     : "";
-
         }
 
 
@@ -3762,69 +3778,84 @@
 
         function getFilteredRows() {
 
-            return appState.rawRows.filter(
-                r => {
+            const activeTab =
+                appState.activeTab === "Todos"
+                    ? "Todos"
+                    : normalizeDepartment(
+                        appState.activeTab
+                    );
+
+            const searchContenedor =
+                String(
+                    appState.filters.contenedor || ""
+                )
+                .trim()
+                .toLowerCase();
+
+            const selectedTipo =
+                String(
+                    appState.filters.tipo || ""
+                )
+                .trim();
+
+            const selectedProveedor =
+                String(
+                    appState.filters.proveedor || ""
+                )
+                .trim();
+
+            return appState.rawRows.filter(row => {
+
+                if (activeTab !== "Todos") {
+
+                    const rowDepartment =
+                        normalizeDepartment(
+                            row.nom_dep
+                        );
 
                     if (
-                        appState.activeTab !==
-                            "Todos" &&
-                        r.nom_dep !==
-                            appState.activeTab
+                        rowDepartment !==
+                        activeTab
                     ) {
-
                         return false;
-
                     }
-
-
-                    if (
-                        appState.filters
-                            .contenedor &&
-                        !String(
-                            r.contenedor
-                        )
-                            .toLowerCase()
-                            .includes(
-                                appState
-                                    .filters
-                                    .contenedor
-                            )
-                    ) {
-
-                        return false;
-
-                    }
-
-
-                    if (
-                        appState.filters
-                            .tipo &&
-                        r.tipo !==
-                            appState.filters.tipo
-                    ) {
-
-                        return false;
-
-                    }
-
-
-                    if (
-                        appState.filters
-                            .proveedor &&
-                        r.proveedor !==
-                            appState.filters.proveedor
-                    ) {
-
-                        return false;
-
-                    }
-
-
-                    return true;
 
                 }
-            );
 
+                if (
+                    searchContenedor &&
+                    !String(
+                        row.contenedor ?? ""
+                    )
+                    .toLowerCase()
+                    .includes(
+                        searchContenedor
+                    )
+                ) {
+                    return false;
+                }
+
+                if (
+                    selectedTipo &&
+                    String(
+                        row.tipo ?? ""
+                    ).trim() !== selectedTipo
+                ) {
+                    return false;
+                }
+
+                if (
+                    selectedProveedor &&
+                    String(
+                        row.proveedor ?? ""
+                    ).trim() !== selectedProveedor
+                ) {
+                    return false;
+                }
+
+                return true;
+
+            });
         }
 
 
