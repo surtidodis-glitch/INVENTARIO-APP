@@ -1409,6 +1409,13 @@
             color: #ffffff;
         }
 
+        /* Corrección: el PACA del reporte se mostraba blanco sobre fondo blanco.
+           La tabla principal usa td strong en blanco, por lo que el reporte
+           necesita sobrescribir ese color. */
+        .container-image-report .report-table td strong {
+            color: #263548;
+        }
+
 
         /* =========================================================
            REPORTE PARA IMAGEN / WHATSAPP
