@@ -1784,6 +1784,36 @@
 
 
         /* =========================================================
+           RESUMEN DE PESO
+           ========================================================= */
+
+        .weight-summary-section { margin: 8px 30px 35px; padding: 24px; background: linear-gradient(145deg, rgba(13,29,49,.96), rgba(8,23,40,.96)); border: 1px solid var(--border); border-radius: 16px; }
+        .weight-summary-heading { display:flex; justify-content:space-between; align-items:flex-end; gap:20px; margin-bottom:18px; }
+        .section-eyebrow { display:block; margin-bottom:5px; color:var(--primary); font-size:.62rem; font-weight:700; letter-spacing:1.1px; }
+        .weight-summary-heading h3 { color:#f8fafc; font-size:1rem; margin-bottom:4px; }
+        .weight-summary-heading p { color:var(--text-light); font-size:.68rem; }
+        .weight-summary-context { flex-shrink:0; max-width:55%; padding:8px 12px; border:1px solid rgba(47,140,255,.2); border-radius:8px; background:rgba(47,140,255,.07); color:#8bbdf5; font-size:.61rem; font-weight:600; }
+        .weight-summary-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:14px; }
+        .weight-summary-card { min-width:0; padding:17px; background:rgba(5,16,29,.72); border:1px solid rgba(148,163,184,.12); border-radius:12px; }
+        .weight-card-header { display:flex; justify-content:space-between; align-items:flex-start; gap:12px; padding-bottom:13px; border-bottom:1px solid rgba(148,163,184,.1); }
+        .weight-card-title { display:flex; align-items:center; gap:9px; min-width:0; }
+        .weight-card-icon { width:30px; height:30px; display:flex; align-items:center; justify-content:center; flex-shrink:0; border-radius:8px; background:rgba(47,140,255,.1); border:1px solid rgba(47,140,255,.13); font-size:.85rem; }
+        .weight-card-header h4 { color:#eaf2fb; font-size:.72rem; margin-bottom:2px; }
+        .weight-card-header span:not(.weight-card-icon) { color:#687e97; font-size:.55rem; }
+        .weight-card-header > strong { color:#8fc4ff; font-size:.72rem; white-space:nowrap; }
+        .weight-bars { display:flex; flex-direction:column; gap:11px; padding-top:15px; }
+        .weight-bar-row { min-width:0; }
+        .weight-bar-label { display:flex; justify-content:space-between; align-items:center; gap:10px; margin-bottom:5px; }
+        .weight-bar-name { min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:#cbd5e1; font-size:.6rem; font-weight:600; }
+        .weight-bar-value { flex-shrink:0; color:#8da4bd; font-size:.57rem; font-weight:600; }
+        .weight-bar-track { width:100%; height:7px; overflow:hidden; border-radius:99px; background:#0d1e31; }
+        .weight-bar-fill { height:100%; min-width:2px; border-radius:inherit; background:linear-gradient(90deg,#236fbe,#4c9fff); }
+        .weight-bar-meta { margin-top:3px; color:#526a84; font-size:.51rem; }
+        .weight-empty { padding:16px 0 5px; color:#526a84; font-size:.59rem; text-align:center; }
+        @media (max-width:1000px) { .weight-summary-grid { grid-template-columns:1fr; } }
+
+
+        /* =========================================================
            EMPTY STATE
            ========================================================= */
 
@@ -1928,6 +1958,10 @@
            ========================================================= */
 
         @media (max-width: 767px) {
+
+            .weight-summary-section { margin:8px 14px 20px; padding:15px; border-radius:11px; }
+            .weight-summary-heading { align-items:flex-start; flex-direction:column; gap:10px; }
+            .weight-summary-context { width:100%; max-width:none; }
 
             body {
                 padding-bottom: 20px;
@@ -2515,6 +2549,40 @@
 
         </section>
 
+        <section class="weight-summary-section" id="weight-summary-section">
+            <div class="weight-summary-heading">
+                <div>
+                    <span class="section-eyebrow">ANÁLISIS DE PESO</span>
+                    <h3>Distribución de libras</h3>
+                    <p>Visualiza el peso de la vista actual por departamento, tipo y proveedor.</p>
+                </div>
+                <div class="weight-summary-context" id="weight-summary-context">Vista actual</div>
+            </div>
+            <div class="weight-summary-grid">
+                <div class="weight-summary-card">
+                    <div class="weight-card-header">
+                        <div class="weight-card-title"><span class="weight-card-icon">🏷️</span><div><h4>Por departamento</h4><span>Ropa, Calzado, Carteras, etc.</span></div></div>
+                        <strong id="weight-total-department">0 lbs</strong>
+                    </div>
+                    <div class="weight-bars" id="weight-by-department"></div>
+                </div>
+                <div class="weight-summary-card">
+                    <div class="weight-card-header">
+                        <div class="weight-card-title"><span class="weight-card-icon">◈</span><div><h4>Por tipo</h4><span>Clasificación de las pacas</span></div></div>
+                        <strong id="weight-total-type">0 lbs</strong>
+                    </div>
+                    <div class="weight-bars" id="weight-by-type"></div>
+                </div>
+                <div class="weight-summary-card">
+                    <div class="weight-card-header">
+                        <div class="weight-card-title"><span class="weight-card-icon">◉</span><div><h4>Por proveedor</h4><span>Distribución por proveedor</span></div></div>
+                        <strong id="weight-total-provider">0 lbs</strong>
+                    </div>
+                    <div class="weight-bars" id="weight-by-provider"></div>
+                </div>
+            </div>
+        </section>
+
     </div>
 
 
@@ -2771,6 +2839,21 @@
             return normalized;
         }
 
+        function normalizeProvider(value) {
+            if (value === undefined || value === null) return "";
+            const normalized = String(value).normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, " ").trim().toUpperCase();
+            const aliases = { "ERIC": "ERIKA", "ERIKA": "ERIKA", "TEO": "TEODORO", "TEODORO": "TEODORO" };
+            return aliases[normalized] || normalized;
+        }
+
+        function normalizeTipo(value) {
+            if (value === undefined || value === null) return "GENERAL";
+            const normalized = String(value).normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, " ").trim().toUpperCase();
+            if (!normalized) return "GENERAL";
+            if (normalized === "MIX RAG" || normalized === "MIX RAGS") return "MIX RAGS";
+            return normalized;
+        }
+
         function sameDepartment(a, b) {
             return normalizeDepartment(a) === normalizeDepartment(b);
         }
@@ -2839,36 +2922,8 @@
         // ========================================================
 
         function calcularPesoTotal(pacas) {
-
-            return pacas.reduce(
-                (total, p) => {
-
-                    let valor =
-                        String(
-                            p.peso ?? ""
-                        )
-                        .replace(/,/g, "")
-                        .replace(/[^\d.-]/g, "");
-
-                    let numero =
-                        parseFloat(valor);
-
-                    if (
-                        Number.isNaN(numero)
-                    ) {
-
-                        return total;
-
-                    }
-
-                    return total + numero;
-
-                },
-                0
-            );
-
+            return pacas.reduce((total, p) => total + parsePeso(p.peso), 0);
         }
-
 
         // ========================================================
         // DETECTAR COLUMNAS
@@ -3055,10 +3110,9 @@
                             savedData
                         ).map(row => ({
                             ...row,
-                            nom_dep:
-                                normalizeDepartment(
-                                    row.nom_dep
-                                )
+                            nom_dep: normalizeDepartment(row.nom_dep),
+                            tipo: normalizeTipo(row.tipo),
+                            proveedor: normalizeProvider(row.proveedor) || "VARIOS"
                         }));
 
                     renderApp();
@@ -3375,28 +3429,14 @@
                                     'tipo'
                                 ) {
 
-                                    val =
-                                        val
-                                            ? String(
-                                                val
-                                            )
-                                                .toUpperCase()
-                                                .trim()
-                                            : "GENERAL";
+                                    val = normalizeTipo(val);
 
                                 } else if (
                                     key ===
                                     'proveedor'
                                 ) {
 
-                                    val =
-                                        val
-                                            ? String(
-                                                val
-                                            )
-                                                .toUpperCase()
-                                                .trim()
-                                            : "VARIOS";
+                                    val = normalizeProvider(val) || "VARIOS";
 
                                 }
 
@@ -3506,7 +3546,9 @@
             // de localStorage de versiones anteriores.
             appState.rawRows = appState.rawRows.map(row => ({
                 ...row,
-                nom_dep: normalizeDepartment(row.nom_dep)
+                nom_dep: normalizeDepartment(row.nom_dep),
+                tipo: normalizeTipo(row.tipo),
+                proveedor: normalizeProvider(row.proveedor) || "VARIOS"
             }));
 
             // Persistimos la normalización para que no vuelva a aparecer
@@ -3664,11 +3706,11 @@
             filteredByTab.forEach(row => {
 
                 if (row.tipo !== undefined && row.tipo !== null && String(row.tipo).trim()) {
-                    tipos.add(String(row.tipo).trim());
+                    tipos.add(normalizeTipo(row.tipo));
                 }
 
                 if (row.proveedor !== undefined && row.proveedor !== null && String(row.proveedor).trim()) {
-                    proveedores.add(String(row.proveedor).trim());
+                    proveedores.add(normalizeProvider(row.proveedor));
                 }
             });
 
@@ -3725,10 +3767,10 @@
                     .toLowerCase();
 
             const selectedTipo =
-                String(appState.filters.tipo || "").trim();
+                appState.filters.tipo ? normalizeTipo(appState.filters.tipo) : "";
 
             const selectedProveedor =
-                String(appState.filters.proveedor || "").trim();
+                appState.filters.proveedor ? normalizeProvider(appState.filters.proveedor) : "";
 
             return appState.rawRows.filter(row => {
 
@@ -3762,7 +3804,7 @@
 
                 if (
                     selectedTipo &&
-                    String(row.tipo ?? "").trim() !== selectedTipo
+                    normalizeTipo(row.tipo) !== selectedTipo
                 ) {
                     return false;
                 }
@@ -3773,7 +3815,7 @@
 
                 if (
                     selectedProveedor &&
-                    String(row.proveedor ?? "").trim() !== selectedProveedor
+                    normalizeProvider(row.proveedor) !== selectedProveedor
                 ) {
                     return false;
                 }
@@ -3926,6 +3968,8 @@
                     </div>
 
                 `;
+
+                renderWeightSummary([]);
 
                 return;
 
@@ -4172,12 +4216,91 @@
             mainContainer.innerHTML =
                 html;
 
+            renderWeightSummary(filteredRows);
+
         }
 
 
         // ========================================================
         // CREAR REPORTE
         // ========================================================
+
+        // ========================================================
+        // RESUMEN DE PESO
+        // ========================================================
+
+        function formatLbs(value) {
+            return new Intl.NumberFormat("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(Number(value) || 0);
+        }
+
+        function parsePeso(value) {
+            if (value === undefined || value === null || value === "") return 0;
+            if (typeof value === "number") return Number.isFinite(value) ? value : 0;
+            let text = String(value).trim().replace(/[^0-9,.-]/g, "");
+            if (!text) return 0;
+            const comma = text.includes(",");
+            const dot = text.includes(".");
+            if (comma && dot) {
+                if (text.lastIndexOf(".") > text.lastIndexOf(",")) text = text.replace(/,/g, "");
+                else text = text.replace(/\./g, "").replace(",", ".");
+            } else if (comma) {
+                const parts = text.split(",");
+                if (parts.length === 2 && parts[1].length <= 2) text = text.replace(",", ".");
+                else text = text.replace(/,/g, "");
+            }
+            const number = parseFloat(text);
+            return Number.isFinite(number) ? number : 0;
+        }
+
+        function buildWeightGroups(rows, field) {
+            const groups = new Map();
+            rows.forEach(row => {
+                let label = "SIN ESPECIFICAR";
+                if (field === "nom_dep") label = normalizeDepartment(row.nom_dep) || "MISC.";
+                if (field === "tipo") label = normalizeTipo(row.tipo);
+                if (field === "proveedor") label = normalizeProvider(row.proveedor) || "VARIOS";
+                const peso = parsePeso(row.peso);
+                groups.set(label, (groups.get(label) || 0) + peso);
+            });
+            return Array.from(groups.entries()).map(([label, peso]) => ({ label, peso })).sort((a,b) => b.peso - a.peso);
+        }
+
+        function renderWeightGroup(targetId, totalId, groups, emptyText) {
+            const target = document.getElementById(targetId);
+            const totalElement = document.getElementById(totalId);
+            if (!target || !totalElement) return;
+            const total = groups.reduce((sum, item) => sum + item.peso, 0);
+            totalElement.textContent = `${formatLbs(total)} lbs`;
+            if (!groups.length || total <= 0) {
+                target.innerHTML = `<div class="weight-empty">${escapeHtml(emptyText)}</div>`;
+                return;
+            }
+            const maxPeso = Math.max(...groups.map(item => item.peso), 1);
+            target.innerHTML = groups.map(item => {
+                const percent = total > 0 ? item.peso / total * 100 : 0;
+                const width = Math.max(item.peso / maxPeso * 100, 2);
+                return `<div class="weight-bar-row"><div class="weight-bar-label"><span class="weight-bar-name" title="${escapeHtml(item.label)}">${escapeHtml(item.label)}</span><span class="weight-bar-value">${formatLbs(item.peso)} lbs</span></div><div class="weight-bar-track"><div class="weight-bar-fill" style="width:${width.toFixed(2)}%"></div></div><div class="weight-bar-meta">${percent.toFixed(1)}% del peso de esta vista</div></div>`;
+            }).join("");
+        }
+
+        function renderWeightSummary(rows) {
+            const section = document.getElementById("weight-summary-section");
+            if (!section) return;
+            if (!rows.length) { section.style.display = "none"; return; }
+            section.style.display = "block";
+            renderWeightGroup("weight-by-department", "weight-total-department", buildWeightGroups(rows, "nom_dep"), "No hay pesos disponibles por departamento.");
+            renderWeightGroup("weight-by-type", "weight-total-type", buildWeightGroups(rows, "tipo"), "No hay pesos disponibles por tipo.");
+            renderWeightGroup("weight-by-provider", "weight-total-provider", buildWeightGroups(rows, "proveedor"), "No hay pesos disponibles por proveedor.");
+            const context = document.getElementById("weight-summary-context");
+            if (context) {
+                const parts = [normalizeDepartment(appState.activeTab) === "TODOS" ? "Todos los departamentos" : normalizeDepartment(appState.activeTab)];
+                if (appState.filters.contenedor) parts.push(`Contenedor: ${appState.filters.contenedor}`);
+                if (appState.filters.tipo) parts.push(`Tipo: ${normalizeTipo(appState.filters.tipo)}`);
+                if (appState.filters.proveedor) parts.push(`Proveedor: ${normalizeProvider(appState.filters.proveedor)}`);
+                context.textContent = parts.join(" · ");
+            }
+        }
+
 
         function createContainerReport(
             container,
