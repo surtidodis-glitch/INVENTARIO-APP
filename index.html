@@ -2841,9 +2841,30 @@
 
         function normalizeProvider(value) {
             if (value === undefined || value === null) return "";
-            const normalized = String(value).normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, " ").trim().toUpperCase();
-            const aliases = { "ERIC": "ERIKA", "ERIKA": "ERIKA", "TEO": "TEODORO", "TEODORO": "TEODORO" };
-            return aliases[normalized] || normalized;
+
+            let normalized = String(value)
+                .normalize("NFD")
+                .replace(/[\u0300-\u036f]/g, "")
+                .replace(/\s+/g, " ")
+                .trim()
+                .toUpperCase();
+
+            if (!normalized) return "";
+
+            // Normalización de nombres de proveedor.
+            // Se aplica tanto al nombre solo como cuando lleva código,
+            // por ejemplo: ERIC/TLIG/0001 -> ERIKA/TLIG/0001.
+            if (/^ERIC(?=\s*\/|\s*$)/.test(normalized)) {
+                normalized = "ERIKA" + normalized.slice(4);
+            } else if (/^TEO(?=\s*\/|\s*$)/.test(normalized)) {
+                normalized = "TEODORO" + normalized.slice(3);
+            }
+
+            // También contempla los nombres escritos completos.
+            if (normalized === "ERIC") return "ERIKA";
+            if (normalized === "TEO") return "TEODORO";
+
+            return normalized;
         }
 
         function normalizeTipo(value) {
