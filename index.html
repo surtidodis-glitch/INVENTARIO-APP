@@ -2851,18 +2851,45 @@
 
             if (!normalized) return "";
 
-            // Normalización de nombres de proveedor.
-            // Se aplica tanto al nombre solo como cuando lleva código,
-            // por ejemplo: ERIC/TLIG/0001 -> ERIKA/TLIG/0001.
-            if (/^ERIC(?=\s*\/|\s*$)/.test(normalized)) {
-                normalized = "ERIKA" + normalized.slice(4);
-            } else if (/^TEO(?=\s*\/|\s*$)/.test(normalized)) {
-                normalized = "TEODORO" + normalized.slice(3);
+            // ====================================================
+            // NORMALIZACIÓN DE PROVEEDORES
+            //
+            // En los datos normalmente el proveedor viene así:
+            //   ERIC/TLIG/0001
+            //   KENNEDY/TLIG/0002
+            //   JENNY/TLIG/0002
+            //
+            // El nombre real del proveedor es lo que está ANTES
+            // de la primera "/". El resto es código interno y no
+            // debe crear proveedores diferentes en los filtros.
+            //
+            // Por lo tanto:
+            //   ERIC/TLIG/0001       -> ERIKA
+            //   ERIC/TLIG/0003       -> ERIKA
+            //   TEO/TLIG/0001        -> TEODORO
+            //   KENNEDY/TLIG/0002    -> KENNEDY
+            //   JENNY/TLIG/0002      -> JENNY
+            //
+            // Cualquier otro nombre funciona automáticamente; no
+            // necesitamos conocer previamente todos los proveedores.
+            // ====================================================
+
+            const slashIndex = normalized.indexOf("/");
+
+            if (slashIndex >= 0) {
+                normalized = normalized
+                    .substring(0, slashIndex)
+                    .trim();
             }
 
-            // También contempla los nombres escritos completos.
-            if (normalized === "ERIC") return "ERIKA";
-            if (normalized === "TEO") return "TEODORO";
+            // Alias solicitados por el usuario.
+            if (normalized === "ERIC") {
+                return "ERIKA";
+            }
+
+            if (normalized === "TEO") {
+                return "TEODORO";
+            }
 
             return normalized;
         }
