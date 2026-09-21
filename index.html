@@ -1787,30 +1787,30 @@
            RESUMEN DE PESO
            ========================================================= */
 
-        .weight-summary-section { margin: 8px 30px 35px; padding: 24px; background: linear-gradient(145deg, rgba(13,29,49,.96), rgba(8,23,40,.96)); border: 1px solid var(--border); border-radius: 16px; }
-        .weight-summary-heading { display:flex; justify-content:space-between; align-items:flex-end; gap:20px; margin-bottom:18px; }
-        .section-eyebrow { display:block; margin-bottom:5px; color:var(--primary); font-size:.62rem; font-weight:700; letter-spacing:1.1px; }
-        .weight-summary-heading h3 { color:#f8fafc; font-size:1rem; margin-bottom:4px; }
-        .weight-summary-heading p { color:var(--text-light); font-size:.68rem; }
-        .weight-summary-context { flex-shrink:0; max-width:55%; padding:8px 12px; border:1px solid rgba(47,140,255,.2); border-radius:8px; background:rgba(47,140,255,.07); color:#8bbdf5; font-size:.61rem; font-weight:600; }
-        .weight-summary-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:14px; }
-        .weight-summary-card { min-width:0; padding:17px; background:rgba(5,16,29,.72); border:1px solid rgba(148,163,184,.12); border-radius:12px; }
-        .weight-card-header { display:flex; justify-content:space-between; align-items:flex-start; gap:12px; padding-bottom:13px; border-bottom:1px solid rgba(148,163,184,.1); }
-        .weight-card-title { display:flex; align-items:center; gap:9px; min-width:0; }
-        .weight-card-icon { width:30px; height:30px; display:flex; align-items:center; justify-content:center; flex-shrink:0; border-radius:8px; background:rgba(47,140,255,.1); border:1px solid rgba(47,140,255,.13); font-size:.85rem; }
-        .weight-card-header h4 { color:#eaf2fb; font-size:.72rem; margin-bottom:2px; }
-        .weight-card-header span:not(.weight-card-icon) { color:#687e97; font-size:.55rem; }
-        .weight-card-header > strong { color:#8fc4ff; font-size:.72rem; white-space:nowrap; }
-        .weight-bars { display:flex; flex-direction:column; gap:11px; padding-top:15px; }
+        .weight-summary-section { margin: 10px 30px 28px; padding: 24px 24px 26px; background: linear-gradient(145deg, rgba(13,29,49,.98), rgba(8,23,40,.98)); border: 1px solid var(--border); border-radius: 16px; }
+        .weight-summary-heading { display:flex; justify-content:space-between; align-items:flex-end; gap:24px; margin-bottom:20px; }
+        .section-eyebrow { display:block; margin-bottom:6px; color:var(--primary); font-size:.64rem; font-weight:700; letter-spacing:1.15px; }
+        .weight-summary-heading h3 { color:#f8fafc; font-size:1.05rem; margin-bottom:5px; }
+        .weight-summary-heading p { color:var(--text-light); font-size:.72rem; }
+        .weight-summary-context { flex-shrink:0; max-width:55%; padding:9px 13px; border:1px solid rgba(47,140,255,.2); border-radius:8px; background:rgba(47,140,255,.07); color:#8bbdf5; font-size:.64rem; font-weight:600; }
+        .weight-summary-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:16px; align-items:stretch; }
+        .weight-summary-card { min-width:0; min-height:300px; padding:18px; background:rgba(5,16,29,.78); border:1px solid rgba(148,163,184,.12); border-radius:12px; }
+        .weight-card-header { display:flex; justify-content:space-between; align-items:flex-start; gap:14px; padding-bottom:15px; border-bottom:1px solid rgba(148,163,184,.1); }
+        .weight-card-title { display:flex; align-items:center; gap:10px; min-width:0; }
+        .weight-card-icon { width:32px; height:32px; display:flex; align-items:center; justify-content:center; flex-shrink:0; border-radius:8px; background:rgba(47,140,255,.1); border:1px solid rgba(47,140,255,.13); font-size:.9rem; }
+        .weight-card-header h4 { color:#eaf2fb; font-size:.76rem; margin-bottom:3px; }
+        .weight-card-header span:not(.weight-card-icon) { color:#7187a0; font-size:.59rem; }
+        .weight-card-header > strong { color:#8fc4ff; font-size:.75rem; white-space:nowrap; }
+        .weight-bars { display:flex; flex-direction:column; gap:14px; padding-top:17px; }
         .weight-bar-row { min-width:0; }
-        .weight-bar-label { display:flex; justify-content:space-between; align-items:center; gap:10px; margin-bottom:5px; }
-        .weight-bar-name { min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:#cbd5e1; font-size:.6rem; font-weight:600; }
-        .weight-bar-value { flex-shrink:0; color:#8da4bd; font-size:.57rem; font-weight:600; }
-        .weight-bar-track { width:100%; height:7px; overflow:hidden; border-radius:99px; background:#0d1e31; }
+        .weight-bar-label { display:flex; justify-content:space-between; align-items:center; gap:12px; margin-bottom:6px; }
+        .weight-bar-name { min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:#d5deea; font-size:.64rem; font-weight:600; }
+        .weight-bar-value { flex-shrink:0; color:#9bb0c7; font-size:.61rem; font-weight:600; }
+        .weight-bar-track { width:100%; height:8px; overflow:hidden; border-radius:99px; background:#0d1e31; }
         .weight-bar-fill { height:100%; min-width:2px; border-radius:inherit; background:linear-gradient(90deg,#236fbe,#4c9fff); }
-        .weight-bar-meta { margin-top:3px; color:#526a84; font-size:.51rem; }
-        .weight-empty { padding:16px 0 5px; color:#526a84; font-size:.59rem; text-align:center; }
-        @media (max-width:1000px) { .weight-summary-grid { grid-template-columns:1fr; } }
+        .weight-bar-meta { margin-top:4px; color:#5d7691; font-size:.55rem; }
+        .weight-empty { padding:20px 0 5px; color:#526a84; font-size:.62rem; text-align:center; }
+        @media (max-width:1000px) { .weight-summary-grid { grid-template-columns:1fr; } .weight-summary-card { min-height:0; } }
 
 
         /* =========================================================
@@ -2404,6 +2404,45 @@
 
 
         <!-- =====================================================
+             ANÁLISIS DE PESO
+             ===================================================== -->
+
+                <section class="weight-summary-section" id="weight-summary-section">
+            <div class="weight-summary-heading">
+                <div>
+                    <span class="section-eyebrow">ANÁLISIS DE PESO</span>
+                    <h3>Distribución de libras</h3>
+                    <p>Visualiza el peso de la vista actual por departamento, tipo y proveedor.</p>
+                </div>
+                <div class="weight-summary-context" id="weight-summary-context">Vista actual</div>
+            </div>
+            <div class="weight-summary-grid">
+                <div class="weight-summary-card">
+                    <div class="weight-card-header">
+                        <div class="weight-card-title"><span class="weight-card-icon">🏷️</span><div><h4>Por departamento</h4><span>Ropa, Calzado, Carteras, etc.</span></div></div>
+                        <strong id="weight-total-department">0 lbs</strong>
+                    </div>
+                    <div class="weight-bars" id="weight-by-department"></div>
+                </div>
+                <div class="weight-summary-card">
+                    <div class="weight-card-header">
+                        <div class="weight-card-title"><span class="weight-card-icon">◈</span><div><h4>Por tipo</h4><span>Clasificación de las pacas</span></div></div>
+                        <strong id="weight-total-type">0 lbs</strong>
+                    </div>
+                    <div class="weight-bars" id="weight-by-type"></div>
+                </div>
+                <div class="weight-summary-card">
+                    <div class="weight-card-header">
+                        <div class="weight-card-title"><span class="weight-card-icon">◉</span><div><h4>Por proveedor</h4><span>Distribución por proveedor</span></div></div>
+                        <strong id="weight-total-provider">0 lbs</strong>
+                    </div>
+                    <div class="weight-bars" id="weight-by-provider"></div>
+                </div>
+            </div>
+        </section>
+
+
+        <!-- =====================================================
              DEPARTAMENTOS
              ===================================================== -->
 
@@ -2549,39 +2588,6 @@
 
         </section>
 
-        <section class="weight-summary-section" id="weight-summary-section">
-            <div class="weight-summary-heading">
-                <div>
-                    <span class="section-eyebrow">ANÁLISIS DE PESO</span>
-                    <h3>Distribución de libras</h3>
-                    <p>Visualiza el peso de la vista actual por departamento, tipo y proveedor.</p>
-                </div>
-                <div class="weight-summary-context" id="weight-summary-context">Vista actual</div>
-            </div>
-            <div class="weight-summary-grid">
-                <div class="weight-summary-card">
-                    <div class="weight-card-header">
-                        <div class="weight-card-title"><span class="weight-card-icon">🏷️</span><div><h4>Por departamento</h4><span>Ropa, Calzado, Carteras, etc.</span></div></div>
-                        <strong id="weight-total-department">0 lbs</strong>
-                    </div>
-                    <div class="weight-bars" id="weight-by-department"></div>
-                </div>
-                <div class="weight-summary-card">
-                    <div class="weight-card-header">
-                        <div class="weight-card-title"><span class="weight-card-icon">◈</span><div><h4>Por tipo</h4><span>Clasificación de las pacas</span></div></div>
-                        <strong id="weight-total-type">0 lbs</strong>
-                    </div>
-                    <div class="weight-bars" id="weight-by-type"></div>
-                </div>
-                <div class="weight-summary-card">
-                    <div class="weight-card-header">
-                        <div class="weight-card-title"><span class="weight-card-icon">◉</span><div><h4>Por proveedor</h4><span>Distribución por proveedor</span></div></div>
-                        <strong id="weight-total-provider">0 lbs</strong>
-                    </div>
-                    <div class="weight-bars" id="weight-by-provider"></div>
-                </div>
-            </div>
-        </section>
 
     </div>
 
