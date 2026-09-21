@@ -2470,6 +2470,32 @@
 
             </div>
 
+            <div class="select-wrapper">
+
+                <label for="filter-fecha-desde">
+                    Fecha desde
+                </label>
+
+                <input
+                    type="date"
+                    id="filter-fecha-desde"
+                >
+
+            </div>
+
+            <div class="select-wrapper">
+
+                <label for="filter-fecha-hasta">
+                    Fecha hasta
+                </label>
+
+                <input
+                    type="date"
+                    id="filter-fecha-hasta"
+                >
+
+            </div>
+
         </div>
 
 
@@ -2686,7 +2712,11 @@
 
                 tipo: "",
 
-                proveedor: ""
+                proveedor: "",
+
+                fechaDesde: "",
+
+                fechaHasta: ""
 
             }
 
@@ -3337,6 +3367,34 @@
 
 
                 document
+                    .getElementById('filter-fecha-desde')
+                    .addEventListener(
+                        'change',
+                        (e) => {
+
+                            appState.filters.fechaDesde = e.target.value;
+
+                            renderFilteredList();
+
+                        }
+                    );
+
+
+                document
+                    .getElementById('filter-fecha-hasta')
+                    .addEventListener(
+                        'change',
+                        (e) => {
+
+                            appState.filters.fechaHasta = e.target.value;
+
+                            renderFilteredList();
+
+                        }
+                    );
+
+
+                document
                     .getElementById('btn-export')
                     .addEventListener(
                         'click',
@@ -3577,7 +3635,11 @@
 
                             tipo: "",
 
-                            proveedor: ""
+                            proveedor: "",
+
+                            fechaDesde: "",
+
+                            fechaHasta: ""
 
                         };
 
@@ -3586,6 +3648,14 @@
                             .getElementById(
                                 'search-contenedor'
                             )
+                            .value = "";
+
+                        document
+                            .getElementById('filter-fecha-desde')
+                            .value = "";
+
+                        document
+                            .getElementById('filter-fecha-hasta')
                             .value = "";
 
 
@@ -3851,6 +3921,57 @@
 
 
         // ========================================================
+        // NORMALIZAR FECHA PARA FILTROS
+        // ========================================================
+
+        function normalizeDateForFilter(value) {
+
+            if (value === undefined || value === null || value === "") {
+                return null;
+            }
+
+            // Fechas de Excel almacenadas como número serial.
+            if (typeof value === "number" && Number.isFinite(value)) {
+                if (window.XLSX && XLSX.SSF && XLSX.SSF.parse_date_code) {
+                    const parts = XLSX.SSF.parse_date_code(value);
+                    if (parts && parts.y && parts.m && parts.d) {
+                        return `${String(parts.y).padStart(4, "0")}-${String(parts.m).padStart(2, "0")}-${String(parts.d).padStart(2, "0")}`;
+                    }
+                }
+
+                // Respaldo para seriales de Excel.
+                const excelEpoch = Date.UTC(1899, 11, 30);
+                const date = new Date(excelEpoch + value * 86400000);
+                if (!Number.isNaN(date.getTime())) {
+                    return date.toISOString().slice(0, 10);
+                }
+            }
+
+            const text = String(value).trim();
+            if (!text) return null;
+
+            // ISO: YYYY-MM-DD o YYYY-MM-DDTHH:mm:ss
+            let match = text.match(/^(\d{4})[-\/](\d{1,2})[-\/](\d{1,2})/);
+            if (match) {
+                return `${match[1]}-${String(match[2]).padStart(2, "0")}-${String(match[3]).padStart(2, "0")}`;
+            }
+
+            // Formato habitual en Excel/LatAm: DD/MM/YYYY o DD-MM-YYYY.
+            match = text.match(/^(\d{1,2})[-\/](\d{1,2})[-\/](\d{4})/);
+            if (match) {
+                return `${match[3]}-${String(match[2]).padStart(2, "0")}-${String(match[1]).padStart(2, "0")}`;
+            }
+
+            const parsed = new Date(text);
+            if (!Number.isNaN(parsed.getTime())) {
+                return `${parsed.getFullYear()}-${String(parsed.getMonth() + 1).padStart(2, "0")}-${String(parsed.getDate()).padStart(2, "0")}`;
+            }
+
+            return null;
+        }
+
+
+        // ========================================================
         // FILAS FILTRADAS
         // ========================================================
 
@@ -3869,6 +3990,12 @@
 
             const selectedProveedor =
                 appState.filters.proveedor ? normalizeProvider(appState.filters.proveedor) : "";
+
+            const fechaDesde =
+                appState.filters.fechaDesde || "";
+
+            const fechaHasta =
+                appState.filters.fechaHasta || "";
 
             return appState.rawRows.filter(row => {
 
@@ -3916,6 +4043,30 @@
                     normalizeProvider(row.proveedor) !== selectedProveedor
                 ) {
                     return false;
+                }
+
+                // ====================================================
+                // FECHA
+                // El rango se aplica a toda la vista actual, por lo
+                // que también afecta las tarjetas y el análisis de peso.
+                // ====================================================
+
+                if (fechaDesde || fechaHasta) {
+
+                    const rowFecha = normalizeDateForFilter(row.fecha);
+
+                    // Un registro sin fecha no entra en un rango activo.
+                    if (!rowFecha) {
+                        return false;
+                    }
+
+                    if (fechaDesde && rowFecha < fechaDesde) {
+                        return false;
+                    }
+
+                    if (fechaHasta && rowFecha > fechaHasta) {
+                        return false;
+                    }
                 }
 
                 return true;
