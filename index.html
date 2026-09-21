@@ -3191,23 +3191,36 @@
 
         function initWeightSummaryToggle() {
             const section = document.getElementById("weight-summary-section");
-            const heading = document.getElementById("weight-summary-toggle");
+            const heading = section ? section.querySelector(".weight-summary-heading") : null;
             const button = document.getElementById("weight-summary-button");
-            if (!section || !heading || !button || section.dataset.toggleReady === "true") return;
+            const grid = document.getElementById("weight-summary-grid");
+
+            if (!section || !heading || !button || !grid || section.dataset.toggleReady === "true") return;
 
             section.dataset.toggleReady = "true";
 
             const setOpen = (open) => {
                 section.classList.toggle("is-open", open);
-                heading.setAttribute("aria-expanded", String(open));
                 button.setAttribute("aria-expanded", String(open));
                 button.setAttribute("aria-label", open ? "Ocultar análisis de peso" : "Mostrar análisis de peso");
+                grid.setAttribute("aria-hidden", String(!open));
             };
 
-            const toggle = () => setOpen(!section.classList.contains("is-open"));
+            const toggle = () => {
+                setOpen(!section.classList.contains("is-open"));
+            };
 
+            // El botón abre/cierra el análisis.
             button.addEventListener("click", (event) => {
+                event.preventDefault();
                 event.stopPropagation();
+                toggle();
+            });
+
+            // También permitimos hacer clic en el encabezado, sin convertir
+            // las tarjetas del análisis en elementos desplegables independientes.
+            heading.addEventListener("click", (event) => {
+                if (event.target.closest("button")) return;
                 toggle();
             });
 
