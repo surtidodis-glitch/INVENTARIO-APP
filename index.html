@@ -961,6 +961,33 @@
                 0 0 0 3px rgba(47, 140, 255, 0.09);
         }
 
+        input[type="date"] {
+            width: 100%;
+            padding: 11px 12px;
+            border: 1px solid var(--border-strong);
+            border-radius: 9px;
+            font-size: 0.72rem;
+            font-family: inherit;
+            font-weight: 500;
+            background: rgba(3, 13, 25, 0.75);
+            color: var(--text);
+            color-scheme: dark;
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+        }
+
+        input[type="date"]:focus {
+            border-color: var(--primary);
+            background: rgba(3, 13, 25, 0.95);
+            box-shadow: 0 0 0 3px rgba(47, 140, 255, 0.09);
+        }
+
+        input[type="date"]::-webkit-calendar-picker-indicator {
+            opacity: 0.82;
+            cursor: pointer;
+            filter: invert(84%) sepia(12%) saturate(510%) hue-rotate(176deg) brightness(94%);
+        }
+
         select option {
             background: #0d1d31;
 
@@ -1157,6 +1184,47 @@
             font-weight: 700;
 
             border: 1px solid rgba(47, 140, 255, 0.12);
+        }
+
+        .container-meta {
+            flex-shrink: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 4px;
+            min-width: 86px;
+        }
+
+        .container-weight {
+            color: #dbeafe;
+            font-size: 0.61rem;
+            font-weight: 700;
+            white-space: nowrap;
+            letter-spacing: 0.15px;
+        }
+
+        .container-status-partial {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 3px 7px;
+            border-radius: 999px;
+            background: rgba(245, 158, 11, 0.11);
+            border: 1px solid rgba(245, 158, 11, 0.25);
+            color: #fbbf24;
+            font-size: 0.52rem;
+            font-weight: 800;
+            letter-spacing: .35px;
+            text-transform: uppercase;
+        }
+
+        .container-status-partial::before {
+            content: "";
+            width: 5px;
+            height: 5px;
+            border-radius: 50%;
+            background: currentColor;
+            box-shadow: 0 0 0 2px rgba(245, 158, 11, .10);
         }
 
         .badges-row {
@@ -2097,6 +2165,20 @@
                     5px 8px;
             }
 
+            .container-meta {
+                min-width: 74px;
+                gap: 3px;
+            }
+
+            .container-weight {
+                font-size: 0.54rem;
+            }
+
+            .container-status-partial {
+                font-size: 0.46rem;
+                padding: 2px 5px;
+            }
+
             .badge {
                 font-size: 0.51rem;
 
@@ -2200,7 +2282,23 @@
             }
         }
 
-    </style>
+
+        /* Estado local y reloj: solo interfaz, sin servicios externos */
+        .inventory-status { display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:18px 0 24px; }
+        .inventory-status-card {background:linear-gradient(145deg,#10243b,#0a1b2e);border:1px solid rgba(148,163,184,.18);border-radius:14px;padding:15px 17px;min-width:0;box-shadow:0 7px 20px rgba(0,0,0,.12)}
+        .inventory-status-label {font-size:.72rem;letter-spacing:.055em;text-transform:uppercase;color:#a4b8d0;display:flex;align-items:center;gap:7px;margin-bottom:9px}
+        .inventory-status-value {color:#f8fafc;font-size:1.02rem;font-weight:700;overflow-wrap:anywhere;line-height:1.45}
+        .inventory-status-sub {font-size:.75rem;color:#9fb3c9;margin-top:6px;line-height:1.4}
+        .inventory-local-badge {display:inline-flex;align-items:center;gap:6px;color:#86efac;background:rgba(34,197,94,.11);border:1px solid rgba(34,197,94,.25);border-radius:999px;padding:3px 9px;font-size:.69rem;font-weight:700;white-space:nowrap}
+        .inventory-local-dot {height:7px;width:7px;border-radius:50%;background:#4ade80;box-shadow:0 0 0 3px rgba(74,222,128,.13)}
+        @media(max-width:950px){.inventory-status{grid-template-columns:repeat(2,minmax(0,1fr))}}
+        @media(max-width:520px){.inventory-status{grid-template-columns:1fr;gap:9px}.inventory-status-card{padding:12px 14px}}
+
+    
+        .weight-report-button{display:inline-flex;align-items:center;justify-content:center;gap:8px;width:100%;margin:12px 0 8px;padding:10px 12px;border:1px solid rgba(47,140,255,.42);border-radius:9px;background:rgba(47,140,255,.10);color:#dbeafe;font:600 .78rem/1.3 inherit;cursor:pointer;transition:background .18s ease,border-color .18s ease,transform .18s ease}
+        .weight-report-button:hover{background:rgba(47,140,255,.2);border-color:#2f8cff;transform:translateY(-1px)}
+        .weight-report-button:focus-visible{outline:2px solid #60a5fa;outline-offset:2px}
+</style>
 </head>
 
 
@@ -2345,6 +2443,31 @@
         </section>
 
 
+
+        <!-- Información visual de la carga: permanece exclusivamente en este navegador -->
+        <section class="inventory-status" aria-label="Estado del inventario local">
+            <div class="inventory-status-card">
+                <div class="inventory-status-label">📄 Último archivo cargado</div>
+                <div class="inventory-status-value" id="status-file-name">Sin información</div>
+                <div class="inventory-status-sub" id="status-file-records">Carga un Excel para comenzar</div>
+            </div>
+            <div class="inventory-status-card">
+                <div class="inventory-status-label">🗓️ Fecha y hora de la última carga</div>
+                <div class="inventory-status-value" id="status-last-upload">Sin registro</div>
+                <div class="inventory-status-sub" id="status-upload-relative">Los datos se guardan solo en este navegador</div>
+            </div>
+            <div class="inventory-status-card">
+                <div class="inventory-status-label">🕒 Fecha y hora actual</div>
+                <div class="inventory-status-value" id="status-current-time">--</div>
+                <div class="inventory-status-sub">Hora local de este dispositivo</div>
+            </div>
+            <div class="inventory-status-card">
+                <div class="inventory-status-label">🔒 Estado de los datos</div>
+                <div class="inventory-status-value"><span class="inventory-local-badge"><span class="inventory-local-dot"></span> Almacenamiento local</span></div>
+                <div class="inventory-status-sub" id="status-local-summary">Sin datos cargados · Sin sincronización externa</div>
+            </div>
+        </section>
+
         <!-- ESTADÍSTICAS -->
 
         <div class="stats-container">
@@ -2425,13 +2548,14 @@
             <div class="search-wrapper">
 
                 <label for="search-contenedor">
-                    Buscar contenedor
+                    Búsqueda global
                 </label>
 
                 <input
                     type="text"
                     id="search-contenedor"
-                    placeholder="Ej: CONT-12345..."
+                    placeholder="Buscar cualquier dato: contenedor, paca, proveedor, tipo, descripción, fecha, peso, PLU..."
+                    aria-label="Buscar en todas las columnas del archivo cargado"
                 >
 
             </div>
@@ -2469,6 +2593,31 @@
                 </select>
 
             </div>
+
+            <div class="select-wrapper">
+
+                <label for="filter-estado">
+                    Estado del contenedor
+                </label>
+
+                <select id="filter-estado">
+
+                    <option value="">
+                        Todos los contenedores
+                    </option>
+
+                    <option value="COMPLETO">
+                        Completos
+                    </option>
+
+                    <option value="PARCIAL">
+                        Parciales
+                    </option>
+
+                </select>
+
+            </div>
+
 
             <div class="select-wrapper">
 
@@ -2586,6 +2735,7 @@
                         <div class="weight-card-title"><span class="weight-card-icon">🏷️</span><div><h4>Por departamento</h4><span>Ropa, Calzado, Carteras, etc.</span></div></div>
                         <strong id="weight-total-department">0 lbs</strong>
                     </div>
+                    <button class="weight-report-button" type="button" onclick="exportWeightReport('nom_dep')">⬇ Generar reporte por departamento</button>
                     <div class="weight-bars" id="weight-by-department"></div>
                 </div>
                 <div class="weight-summary-card">
@@ -2593,6 +2743,7 @@
                         <div class="weight-card-title"><span class="weight-card-icon">◈</span><div><h4>Por tipo</h4><span>Clasificación de las pacas</span></div></div>
                         <strong id="weight-total-type">0 lbs</strong>
                     </div>
+                    <button class="weight-report-button" type="button" onclick="exportWeightReport('tipo')">⬇ Generar reporte por tipo</button>
                     <div class="weight-bars" id="weight-by-type"></div>
                 </div>
                 <div class="weight-summary-card">
@@ -2600,6 +2751,7 @@
                         <div class="weight-card-title"><span class="weight-card-icon">◉</span><div><h4>Por proveedor</h4><span>Distribución por proveedor</span></div></div>
                         <strong id="weight-total-provider">0 lbs</strong>
                     </div>
+                    <button class="weight-report-button" type="button" onclick="exportWeightReport('proveedor')">⬇ Generar reporte por proveedor</button>
                     <div class="weight-bars" id="weight-by-provider"></div>
                 </div>
             </div>
@@ -2700,6 +2852,8 @@
         // ESTADO
         // ========================================================
 
+        let currentWeightRows = [];
+
         let appState = {
 
             rawRows: [],
@@ -2713,6 +2867,8 @@
                 tipo: "",
 
                 proveedor: "",
+
+                estadoContenedor: "",
 
                 fechaDesde: "",
 
@@ -2823,6 +2979,17 @@
                 .toLowerCase()
                 .normalize("NFD")
                 .replace(/[\u0300-\u036f]/g, "")
+                .trim();
+        }
+
+        // Normaliza las búsquedas globales para que coincidan aunque
+        // el usuario escriba sin tildes o con mayúsculas/minúsculas.
+        function normalizeGlobalSearch(value) {
+            return String(value ?? "")
+                .normalize("NFD")
+                .replace(/[\u0300-\u036f]/g, "")
+                .toLocaleLowerCase("es-SV")
+                .replace(/\s+/g, " ")
                 .trim();
         }
 
@@ -3204,6 +3371,7 @@
                         }));
 
                     renderApp();
+                    updateInventoryStatus();
 
                 } catch (e) {
 
@@ -3364,6 +3532,19 @@
                                 .proveedor =
                                 e.target.value;
 
+                            renderFilteredList();
+
+                        }
+                    );
+
+
+                document
+                    .getElementById('filter-estado')
+                    .addEventListener(
+                        'change',
+                        (e) => {
+
+                            appState.filters.estadoContenedor = e.target.value;
                             renderFilteredList();
 
                         }
@@ -3555,6 +3736,14 @@
                             let newRow = {};
 
 
+                            // Guarda también todas las columnas originales del Excel,
+                            // incluidas aquellas que no se usan en las tarjetas. Así la
+                            // búsqueda global puede encontrar cualquier dato del archivo.
+                            newRow._searchAll = headers.map((header, columnIndex) => {
+                                const value = row[columnIndex];
+                                return `${header ?? ""}: ${value ?? ""}`;
+                            }).join(" | ");
+
                             for (
                                 let key in HEADER_MAP
                             ) {
@@ -3628,6 +3817,12 @@
                             )
                         );
 
+                        localStorage.setItem(
+                            INVENTORY_METADATA_KEY,
+                            JSON.stringify({ filename: file.name, uploadedAt: new Date().toISOString(), recordCount: processedRows.length })
+                        );
+                        updateInventoryStatus();
+
 
                         appState.activeTab =
                             "Todos";
@@ -3641,6 +3836,8 @@
 
                             proveedor: "",
 
+                            estadoContenedor: "",
+
                             fechaDesde: "",
 
                             fechaHasta: ""
@@ -3652,6 +3849,10 @@
                             .getElementById(
                                 'search-contenedor'
                             )
+                            .value = "";
+
+                        document
+                            .getElementById('filter-estado')
                             .value = "";
 
                         document
@@ -3804,6 +4005,10 @@
             // Al cambiar de departamento, los filtros dependientes se reinician.
             appState.filters.tipo = "";
             appState.filters.proveedor = "";
+            appState.filters.estadoContenedor = "";
+
+            const estadoSelect = document.getElementById("filter-estado");
+            if (estadoSelect) estadoSelect.value = "";
 
             document.querySelectorAll(".tab").forEach(tab => {
 
@@ -3976,6 +4181,82 @@
 
 
         // ========================================================
+        // CLASIFICACIÓN DE CONTENEDORES PARCIALES
+        // ========================================================
+
+        const PARTIAL_THRESHOLDS = {
+            "ROPA": 40000,
+            "CALZADO": 20000,
+            "CARTERAS": 20000,
+            "JUGUETES": 20000,
+            "HOGAR": 20000,
+            "MISC.": 15000,
+            "BICICLETAS": 500
+        };
+
+        function getContainerDepartment(rows) {
+            const departments = Array.from(new Set(
+                rows
+                    .map(row => normalizeDepartment(row.nom_dep))
+                    .filter(Boolean)
+            ));
+
+            if (!departments.length) return "";
+
+            // Normalmente cada contenedor pertenece a un solo rubro.
+            // Si existieran varios, se utiliza el primer rubro reconocido.
+            return departments.find(dep => PARTIAL_THRESHOLDS[dep] !== undefined) || departments[0];
+        }
+
+        function getPartialThreshold(rows) {
+            const department = getContainerDepartment(rows);
+            return PARTIAL_THRESHOLDS[department] ?? null;
+        }
+
+        function isPartialContainer(rows) {
+            const threshold = getPartialThreshold(rows);
+            if (threshold === null) return false;
+            return calcularPesoTotal(rows) < threshold;
+        }
+
+        function filterRowsByContainerState(rows) {
+
+            const selectedState = appState.filters.estadoContenedor || "";
+
+            // Sin filtro: mostrar todos los contenedores.
+            if (!selectedState) {
+                return rows;
+            }
+
+            const containers = new Map();
+
+            rows.forEach(row => {
+                const key = String(row.contenedor ?? "").trim();
+                if (!containers.has(key)) containers.set(key, []);
+                containers.get(key).push(row);
+            });
+
+            const matchingContainers = new Set();
+
+            containers.forEach((containerRows, containerId) => {
+                const partial = isPartialContainer(containerRows);
+
+                if (selectedState === "PARCIAL" && partial) {
+                    matchingContainers.add(containerId);
+                }
+
+                if (selectedState === "COMPLETO" && !partial) {
+                    matchingContainers.add(containerId);
+                }
+            });
+
+            return rows.filter(row =>
+                matchingContainers.has(String(row.contenedor ?? "").trim())
+            );
+        }
+
+
+        // ========================================================
         // FILAS FILTRADAS
         // ========================================================
 
@@ -3984,10 +4265,12 @@
             const activeDepartment =
                 normalizeDepartment(appState.activeTab);
 
-            const searchContenedor =
-                String(appState.filters.contenedor || "")
-                    .trim()
-                    .toLowerCase();
+            const globalSearch = normalizeGlobalSearch(
+                appState.filters.contenedor || ""
+            );
+            const globalSearchTerms = globalSearch
+                .split(" ")
+                .filter(Boolean);
 
             const selectedTipo =
                 appState.filters.tipo ? normalizeTipo(appState.filters.tipo) : "";
@@ -3995,13 +4278,16 @@
             const selectedProveedor =
                 appState.filters.proveedor ? normalizeProvider(appState.filters.proveedor) : "";
 
+            const selectedEstado =
+                appState.filters.estadoContenedor || "";
+
             const fechaDesde =
                 appState.filters.fechaDesde || "";
 
             const fechaHasta =
                 appState.filters.fechaHasta || "";
 
-            return appState.rawRows.filter(row => {
+            const filteredRows = appState.rawRows.filter(row => {
 
                 // ====================================================
                 // DEPARTAMENTO
@@ -4015,16 +4301,36 @@
                 }
 
                 // ====================================================
-                // CONTENEDOR
+                // BÚSQUEDA GLOBAL EN TODAS LAS COLUMNAS DEL EXCEL
                 // ====================================================
 
-                if (
-                    searchContenedor &&
-                    !String(row.contenedor ?? "")
-                        .toLowerCase()
-                        .includes(searchContenedor)
-                ) {
-                    return false;
+                if (globalSearchTerms.length) {
+                    const searchableValues = [
+                        row._searchAll,
+                        row.contenedor,
+                        row.paca,
+                        row.fecha,
+                        row.peso,
+                        row.valorlibra,
+                        row.total,
+                        row.nom_dep,
+                        row.proveedor,
+                        row.tipo,
+                        row.descrip,
+                        row.plu,
+                        ...Object.values(row)
+                    ];
+                    const searchableText = normalizeGlobalSearch(
+                        searchableValues
+                            .filter(value => value !== undefined && value !== null)
+                            .join(" ")
+                    );
+
+                    // Si se escriben varias palabras, todas deben existir
+                    // en el registro, aunque estén en columnas diferentes.
+                    if (!globalSearchTerms.every(term => searchableText.includes(term))) {
+                        return false;
+                    }
                 }
 
                 // ====================================================
@@ -4075,6 +4381,8 @@
 
                 return true;
             });
+
+            return filterRowsByContainerState(filteredRows);
         }
 
 
@@ -4180,6 +4488,7 @@
                                 String(b.id)
                             )
                 );
+
 
 
             updateStats(
@@ -4357,17 +4666,29 @@
                                     </span>
 
 
-                                    <span class="paca-count">
+                                    <div class="container-meta">
 
-                                        ${c.pacas.length}
+                                        <span class="paca-count">
 
-                                        ${
-                                            c.pacas.length === 1
-                                                ? 'PACA'
-                                                : 'PACAS'
-                                        }
+                                            ${c.pacas.length}
 
-                                    </span>
+                                            ${
+                                                c.pacas.length === 1
+                                                    ? 'PACA'
+                                                    : 'PACAS'
+                                            }
+
+                                        </span>
+
+                                        <span class="container-weight">
+                                            ${formatLbs(calcularPesoTotal(c.pacas))} lbs
+                                        </span>
+
+                                        ${isPartialContainer(c.pacas) ? `
+                                            <span class="container-status-partial">PARCIAL</span>
+                                        ` : ""}
+
+                                    </div>
 
                                 </div>
 
@@ -4537,6 +4858,7 @@
         }
 
         function renderWeightSummary(rows) {
+            currentWeightRows = Array.isArray(rows) ? rows.slice() : [];
             const section = document.getElementById("weight-summary-section");
             if (!section) return;
             if (!rows.length) { section.style.display = "none"; return; }
@@ -4547,11 +4869,55 @@
             const context = document.getElementById("weight-summary-context");
             if (context) {
                 const parts = [normalizeDepartment(appState.activeTab) === "TODOS" ? "Todos los departamentos" : normalizeDepartment(appState.activeTab)];
-                if (appState.filters.contenedor) parts.push(`Contenedor: ${appState.filters.contenedor}`);
+                if (appState.filters.contenedor) parts.push(`Búsqueda: ${appState.filters.contenedor}`);
                 if (appState.filters.tipo) parts.push(`Tipo: ${normalizeTipo(appState.filters.tipo)}`);
                 if (appState.filters.proveedor) parts.push(`Proveedor: ${normalizeProvider(appState.filters.proveedor)}`);
+                if (appState.filters.estadoContenedor === "PARCIAL") parts.push("Solo contenedores parciales");
+                if (appState.filters.estadoContenedor === "COMPLETO") parts.push("Solo contenedores completos");
                 context.textContent = parts.join(" · ");
             }
+        }
+
+
+        function exportWeightReport(field) {
+            if (!window.XLSX) {
+                alert("No se pudo cargar el generador de Excel. Revisa tu conexión e inténtalo de nuevo.");
+                return;
+            }
+            const fieldConfig = {
+                nom_dep: { title: "Departamento", file: "departamento", sheet: "Por departamento" },
+                tipo: { title: "Tipo", file: "tipo", sheet: "Por tipo" },
+                proveedor: { title: "Proveedor", file: "proveedor", sheet: "Por proveedor" }
+            };
+            const config = fieldConfig[field];
+            if (!config) return;
+            const groups = buildWeightGroups(currentWeightRows, field);
+            if (!groups.length) {
+                alert("No hay datos para generar este reporte con los filtros actuales.");
+                return;
+            }
+            const total = groups.reduce((sum, item) => sum + item.peso, 0);
+            const rows = groups.map((item, index) => ({
+                "N.º": index + 1,
+                [config.title]: item.label,
+                "Peso total (lbs)": Number(item.peso.toFixed(2)),
+                "% del peso": total > 0 ? Number((item.peso / total * 100).toFixed(2)) : 0,
+                "Cantidad de registros": currentWeightRows.filter(row => {
+                    let label = "SIN ESPECIFICAR";
+                    if (field === "nom_dep") label = normalizeDepartment(row.nom_dep) || "MISC.";
+                    if (field === "tipo") label = normalizeTipo(row.tipo);
+                    if (field === "proveedor") label = normalizeProvider(row.proveedor) || "VARIOS";
+                    return label === item.label;
+                }).length
+            }));
+            rows.push({ "N.º": "", [config.title]: "TOTAL GENERAL", "Peso total (lbs)": Number(total.toFixed(2)), "% del peso": 100, "Cantidad de registros": currentWeightRows.length });
+            const worksheet = XLSX.utils.json_to_sheet(rows);
+            worksheet["!cols"] = [{wch:8},{wch:28},{wch:20},{wch:16},{wch:24}];
+            const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, worksheet, config.sheet);
+            const now = new Date();
+            const stamp = `${now.getFullYear()}${String(now.getMonth()+1).padStart(2,"0")}${String(now.getDate()).padStart(2,"0")}_${String(now.getHours()).padStart(2,"0")}${String(now.getMinutes()).padStart(2,"0")}`;
+            XLSX.writeFile(workbook, `Analisis_Peso_${config.file}_${stamp}.xlsx`);
         }
 
 
@@ -5152,6 +5518,50 @@
 
         }
 
+
+
+        // ========================================================
+        // ESTADO VISUAL LOCAL (sin subir información a Internet)
+        // ========================================================
+        const INVENTORY_METADATA_KEY = 'contenedor_inventario_metadata';
+        const inventoryDateFormatter = new Intl.DateTimeFormat('es-SV', {
+            dateStyle: 'medium', timeStyle: 'medium'
+        });
+        function updateInventoryStatus() {
+            const currentTime = document.getElementById('status-current-time');
+            if (!currentTime) return;
+            currentTime.textContent = inventoryDateFormatter.format(new Date());
+            let metadata = null;
+            try { metadata = JSON.parse(localStorage.getItem(INVENTORY_METADATA_KEY) || 'null'); }
+            catch (error) { console.warn('Metadatos locales no disponibles', error); }
+            const rows = Array.isArray(appState.rawRows) ? appState.rawRows : [];
+            const count = rows.length;
+            const filename = document.getElementById('status-file-name');
+            filename.textContent = metadata?.filename || (count ? 'Inventario guardado anteriormente' : 'Sin información');
+            document.getElementById('status-file-records').textContent =
+                count ? `${count.toLocaleString('es-SV')} registros en este dispositivo` : 'Carga un Excel para comenzar';
+            const lastUpload = document.getElementById('status-last-upload');
+            const relative = document.getElementById('status-upload-relative');
+            const timestamp = metadata?.uploadedAt ? new Date(metadata.uploadedAt) : null;
+            if (timestamp && !Number.isNaN(timestamp.getTime())) {
+                lastUpload.textContent = inventoryDateFormatter.format(timestamp);
+                const minutes = Math.max(0, Math.floor((Date.now() - timestamp.getTime()) / 60000));
+                relative.textContent = minutes < 1 ? 'Actualizado hace menos de un minuto' :
+                    minutes < 60 ? `Actualizado hace ${minutes} min` :
+                    minutes < 1440 ? `Actualizado hace ${Math.floor(minutes / 60)} h` :
+                    `Actualizado hace ${Math.floor(minutes / 1440)} día(s)`;
+            } else {
+                lastUpload.textContent = 'Sin registro';
+                relative.textContent = count ? 'Carga nuevamente el Excel para registrar la fecha' : 'Los datos se guardan solo en este navegador';
+            }
+            document.getElementById('status-local-summary').textContent = count
+                ? `${count.toLocaleString('es-SV')} registros · Sin sincronización externa`
+                : 'Sin datos cargados · Sin sincronización externa';
+        }
+        document.addEventListener('DOMContentLoaded', () => {
+            updateInventoryStatus();
+            setInterval(updateInventoryStatus, 1000);
+        });
 
         // ========================================================
         // EXPORTAR EXCEL
